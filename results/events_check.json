@@ -1,0 +1,3781 @@
+{
+  "small:nearest_task_first": [
+    {
+      "task_id": 4,
+      "strategy_name": "nearest_task_first",
+      "dispatch_time": 28.0,
+      "completion_time": 127.57037861598255,
+      "vehicle_ids": [
+        1
+      ],
+      "task_node_id": 22,
+      "score": 16.185901323789736,
+      "overtime": true,
+      "total_distance": 152.35045959812857,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          10,
+          3,
+          4,
+          22,
+          4,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 2
+      },
+      "travel_distance_by_vehicle": {
+        "1": 152.35045959812857
+      },
+      "completion_time_by_vehicle": {
+        "1": 127.57037861598255
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.79748904110717
+      },
+      "final_node_by_vehicle": {
+        "1": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 15.711006629875271
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0
+      }
+    },
+    {
+      "task_id": 13,
+      "strategy_name": "nearest_task_first",
+      "dispatch_time": 36.0,
+      "completion_time": 65.72344047380568,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 1,
+      "score": 212.53554432541281,
+      "overtime": false,
+      "total_distance": 36.97536004706118,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": null
+      },
+      "travel_distance_by_vehicle": {
+        "0": 36.97536004706118
+      },
+      "completion_time_by_vehicle": {
+        "0": 65.72344047380568
+      },
+      "final_battery_by_vehicle": {
+        "0": 121.43876660551393
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 6,
+      "strategy_name": "nearest_task_first",
+      "dispatch_time": 40.0,
+      "completion_time": 86.964303137797,
+      "vehicle_ids": [
+        2
+      ],
+      "task_node_id": 16,
+      "score": 183.80706259081452,
+      "overtime": false,
+      "total_distance": 60.724710438996794,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "2": [
+          0,
+          5,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "2": null
+      },
+      "travel_distance_by_vehicle": {
+        "2": 60.724710438996794
+      },
+      "completion_time_by_vehicle": {
+        "2": 86.964303137797
+      },
+      "final_battery_by_vehicle": {
+        "2": 84.31696211418074
+      },
+      "final_node_by_vehicle": {
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "2": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "2": 0.0
+      }
+    },
+    {
+      "task_id": 14,
+      "strategy_name": "nearest_task_first",
+      "dispatch_time": 52.0,
+      "completion_time": 116.05778681161412,
+      "vehicle_ids": [
+        3
+      ],
+      "task_node_id": 23,
+      "score": 153.14272536250246,
+      "overtime": false,
+      "total_distance": 88.46610993550794,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "3": [
+          0,
+          3,
+          7,
+          23,
+          7,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "3": null
+      },
+      "travel_distance_by_vehicle": {
+        "3": 88.46610993550794
+      },
+      "completion_time_by_vehicle": {
+        "3": 116.05778681161412
+      },
+      "final_battery_by_vehicle": {
+        "3": 75.85282963615653
+      },
+      "final_node_by_vehicle": {
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "3": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 7,
+      "strategy_name": "nearest_task_first",
+      "dispatch_time": 66.0,
+      "completion_time": 156.1091594462564,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 15,
+      "score": 31.732196024300606,
+      "overtime": true,
+      "total_distance": 128.77712019568423,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          6,
+          15,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 0
+      },
+      "travel_distance_by_vehicle": {
+        "0": 128.77712019568423
+      },
+      "completion_time_by_vehicle": {
+        "0": 156.1091594462564
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590782
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 47.85061833999136
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 12,
+      "strategy_name": "nearest_task_first",
+      "dispatch_time": 87.0,
+      "completion_time": 148.24165873059295,
+      "vehicle_ids": [
+        2
+      ],
+      "task_node_id": 4,
+      "score": 118.95447585572504,
+      "overtime": false,
+      "total_distance": 80.79990067348396,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "2": [
+          0,
+          10,
+          3,
+          4,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "2": 2
+      },
+      "travel_distance_by_vehicle": {
+        "2": 80.79990067348396
+      },
+      "completion_time_by_vehicle": {
+        "2": 148.24165873059295
+      },
+      "final_battery_by_vehicle": {
+        "2": 45.77843642940977
+      },
+      "final_node_by_vehicle": {
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "2": 32.00733866873536
+      },
+      "charging_wait_by_vehicle": {
+        "2": 0.0
+      }
+    },
+    {
+      "task_id": 8,
+      "strategy_name": "nearest_task_first",
+      "dispatch_time": 128.0,
+      "completion_time": 223.88292571942517,
+      "vehicle_ids": [
+        1,
+        3
+      ],
+      "task_node_id": 20,
+      "score": -120.45398140525975,
+      "overtime": true,
+      "total_distance": 261.0869268688574,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          1,
+          6,
+          20,
+          9,
+          10,
+          0
+        ],
+        "3": [
+          0,
+          1,
+          12,
+          21,
+          20,
+          9,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 0,
+        "3": 1
+      },
+      "travel_distance_by_vehicle": {
+        "1": 124.87924553187105,
+        "3": 136.20768133698638
+      },
+      "completion_time_by_vehicle": {
+        "1": 218.28048783917964,
+        "3": 223.88292571942517
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.7974890411072,
+        "3": 53.11512547134093
+      },
+      "final_node_by_vehicle": {
+        "1": 0,
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 109.26879275350339,
+        "3": 105.81238370299619
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0,
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 11,
+      "strategy_name": "nearest_task_first",
+      "dispatch_time": 152.0,
+      "completion_time": 197.36513669945094,
+      "vehicle_ids": [
+        2
+      ],
+      "task_node_id": 5,
+      "score": 193.79383717289923,
+      "overtime": false,
+      "total_distance": 44.44092877427374,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "2": [
+          0,
+          10,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "2": 2
+      },
+      "travel_distance_by_vehicle": {
+        "2": 44.44092877427374
+      },
+      "completion_time_by_vehicle": {
+        "2": 197.36513669945094
+      },
+      "final_battery_by_vehicle": {
+        "2": 45.77843642940978
+      },
+      "final_node_by_vehicle": {
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "2": 38.80108399789906
+      },
+      "charging_wait_by_vehicle": {
+        "2": 0.0
+      }
+    },
+    {
+      "task_id": 9,
+      "strategy_name": "nearest_task_first",
+      "dispatch_time": 192.0,
+      "completion_time": 234.4027475848084,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 9,
+      "score": 193.35783711311743,
+      "overtime": false,
+      "total_distance": 50.69144746406653,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          10,
+          9,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 2
+      },
+      "travel_distance_by_vehicle": {
+        "0": 50.69144746406653
+      },
+      "completion_time_by_vehicle": {
+        "0": 234.4027475848084
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.730977885907826
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 46.2753461668158
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 5,
+      "strategy_name": "nearest_task_first",
+      "dispatch_time": 219.0,
+      "completion_time": 309.5001808800402,
+      "vehicle_ids": [
+        1
+      ],
+      "task_node_id": 14,
+      "score": 66.45579205223639,
+      "overtime": false,
+      "total_distance": 135.6135309840874,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          1,
+          5,
+          4,
+          13,
+          14,
+          11,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 0
+      },
+      "travel_distance_by_vehicle": {
+        "1": 135.6135309840874
+      },
+      "completion_time_by_vehicle": {
+        "1": 309.5001808800402
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.7974890411072
+      },
+      "final_node_by_vehicle": {
+        "1": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 118.66124549806949
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0
+      }
+    },
+    {
+      "task_id": 2,
+      "strategy_name": "nearest_task_first",
+      "dispatch_time": 224.0,
+      "completion_time": 278.9151971695968,
+      "vehicle_ids": [
+        2
+      ],
+      "task_node_id": 16,
+      "score": 172.9126610657487,
+      "overtime": false,
+      "total_distance": 67.14981081371988,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "2": [
+          0,
+          10,
+          5,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "2": 2
+      },
+      "travel_distance_by_vehicle": {
+        "2": 67.14981081371988
+      },
+      "completion_time_by_vehicle": {
+        "2": 278.9151971695968
+      },
+      "final_battery_by_vehicle": {
+        "2": 45.77843642940977
+      },
+      "final_node_by_vehicle": {
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "2": 58.6280602518473
+      },
+      "charging_wait_by_vehicle": {
+        "2": 0.0
+      }
+    },
+    {
+      "task_id": 1,
+      "strategy_name": "nearest_task_first",
+      "dispatch_time": 240.0,
+      "completion_time": 334.24840516874065,
+      "vehicle_ids": [
+        0,
+        3
+      ],
+      "task_node_id": 18,
+      "score": 36.73401339062764,
+      "overtime": false,
+      "total_distance": 257.17308019051677,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          6,
+          18,
+          6,
+          1,
+          0
+        ],
+        "3": [
+          0,
+          1,
+          12,
+          16,
+          6,
+          18,
+          6,
+          1,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 0,
+        "3": 1
+      },
+      "travel_distance_by_vehicle": {
+        "0": 121.01912108465251,
+        "3": 136.15395910586426
+      },
+      "completion_time_by_vehicle": {
+        "0": 331.17506875857777,
+        "3": 334.24840516874065
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590783,
+        "3": 53.115125471340946
+      },
+      "final_node_by_vehicle": {
+        "0": 0,
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 110.47626377143575,
+        "3": 128.4993858995864
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0,
+        "3": 0.0
+      }
+    }
+  ],
+  "small:max_task_first": [
+    {
+      "task_id": 4,
+      "strategy_name": "max_task_first",
+      "dispatch_time": 28.0,
+      "completion_time": 127.57037861598255,
+      "vehicle_ids": [
+        1
+      ],
+      "task_node_id": 22,
+      "score": 16.185901323789736,
+      "overtime": true,
+      "total_distance": 152.35045959812857,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          10,
+          3,
+          4,
+          22,
+          4,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 2
+      },
+      "travel_distance_by_vehicle": {
+        "1": 152.35045959812857
+      },
+      "completion_time_by_vehicle": {
+        "1": 127.57037861598255
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.79748904110717
+      },
+      "final_node_by_vehicle": {
+        "1": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 15.711006629875271
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0
+      }
+    },
+    {
+      "task_id": 13,
+      "strategy_name": "max_task_first",
+      "dispatch_time": 36.0,
+      "completion_time": 65.72344047380568,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 1,
+      "score": 212.53554432541281,
+      "overtime": false,
+      "total_distance": 36.97536004706118,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": null
+      },
+      "travel_distance_by_vehicle": {
+        "0": 36.97536004706118
+      },
+      "completion_time_by_vehicle": {
+        "0": 65.72344047380568
+      },
+      "final_battery_by_vehicle": {
+        "0": 121.43876660551393
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 6,
+      "strategy_name": "max_task_first",
+      "dispatch_time": 40.0,
+      "completion_time": 78.74377214958007,
+      "vehicle_ids": [
+        3
+      ],
+      "task_node_id": 16,
+      "score": 191.6165670296206,
+      "overtime": false,
+      "total_distance": 60.724710438996794,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "3": [
+          0,
+          5,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "3": null
+      },
+      "travel_distance_by_vehicle": {
+        "3": 60.724710438996794
+      },
+      "completion_time_by_vehicle": {
+        "3": 78.74377214958007
+      },
+      "final_battery_by_vehicle": {
+        "3": 102.03460813681008
+      },
+      "final_node_by_vehicle": {
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "3": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 12,
+      "strategy_name": "max_task_first",
+      "dispatch_time": 44.0,
+      "completion_time": 105.05407462154672,
+      "vehicle_ids": [
+        2
+      ],
+      "task_node_id": 4,
+      "score": 160.114406220342,
+      "overtime": false,
+      "total_distance": 80.54658247920885,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "2": [
+          0,
+          3,
+          4,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "2": null
+      },
+      "travel_distance_by_vehicle": {
+        "2": 80.54658247920885
+      },
+      "completion_time_by_vehicle": {
+        "2": 105.05407462154672
+      },
+      "final_battery_by_vehicle": {
+        "2": 67.01061539189752
+      },
+      "final_node_by_vehicle": {
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "2": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "2": 0.0
+      }
+    },
+    {
+      "task_id": 7,
+      "strategy_name": "max_task_first",
+      "dispatch_time": 66.0,
+      "completion_time": 156.1091594462564,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 15,
+      "score": 31.732196024300606,
+      "overtime": true,
+      "total_distance": 128.77712019568423,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          6,
+          15,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 0
+      },
+      "travel_distance_by_vehicle": {
+        "0": 128.77712019568423
+      },
+      "completion_time_by_vehicle": {
+        "0": 156.1091594462564
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590782
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 47.85061833999136
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 14,
+      "strategy_name": "max_task_first",
+      "dispatch_time": 79.0,
+      "completion_time": 134.8669048142533,
+      "vehicle_ids": [
+        3
+      ],
+      "task_node_id": 23,
+      "score": 135.1423377989722,
+      "overtime": false,
+      "total_distance": 88.71942812978305,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "3": [
+          0,
+          10,
+          3,
+          7,
+          23,
+          7,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "3": 2
+      },
+      "travel_distance_by_vehicle": {
+        "3": 88.71942812978305
+      },
+      "completion_time_by_vehicle": {
+        "3": 134.8669048142533
+      },
+      "final_battery_by_vehicle": {
+        "3": 53.11512547134093
+      },
+      "final_node_by_vehicle": {
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "3": 34.81214076220823
+      },
+      "charging_wait_by_vehicle": {
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 8,
+      "strategy_name": "max_task_first",
+      "dispatch_time": 128.0,
+      "completion_time": 229.51914206696517,
+      "vehicle_ids": [
+        1,
+        2
+      ],
+      "task_node_id": 20,
+      "score": -119.18567921047355,
+      "overtime": true,
+      "total_distance": 248.3509504747243,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          1,
+          6,
+          20,
+          9,
+          10,
+          0
+        ],
+        "2": [
+          0,
+          10,
+          9,
+          20,
+          9,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 0,
+        "2": 2
+      },
+      "travel_distance_by_vehicle": {
+        "1": 124.87924553187105,
+        "2": 123.47170494285326
+      },
+      "completion_time_by_vehicle": {
+        "1": 218.28048783917964,
+        "2": 229.51914206696517
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.7974890411072,
+        "2": 45.77843642940978
+      },
+      "final_node_by_vehicle": {
+        "1": 0,
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 109.26879275350339,
+        "2": 86.57015836455768
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0,
+        "2": 0.0
+      }
+    },
+    {
+      "task_id": 11,
+      "strategy_name": "max_task_first",
+      "dispatch_time": 152.0,
+      "completion_time": 185.61989158140048,
+      "vehicle_ids": [
+        3
+      ],
+      "task_node_id": 5,
+      "score": 207.8022223890228,
+      "overtime": false,
+      "total_distance": 38.95938578585908,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "3": [
+          0,
+          1,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "3": 0
+      },
+      "travel_distance_by_vehicle": {
+        "3": 38.95938578585908
+      },
+      "completion_time_by_vehicle": {
+        "3": 185.61989158140048
+      },
+      "final_battery_by_vehicle": {
+        "3": 53.11512547134093
+      },
+      "final_node_by_vehicle": {
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "3": 36.769089796466616
+      },
+      "charging_wait_by_vehicle": {
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 5,
+      "strategy_name": "max_task_first",
+      "dispatch_time": 186.0,
+      "completion_time": 290.7987010527296,
+      "vehicle_ids": [
+        0,
+        3
+      ],
+      "task_node_id": 14,
+      "score": 17.01757191507494,
+      "overtime": false,
+      "total_distance": 264.8531963169845,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          10,
+          11,
+          14,
+          11,
+          10,
+          0
+        ],
+        "3": [
+          0,
+          1,
+          5,
+          4,
+          13,
+          14,
+          11,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 2,
+        "3": 0
+      },
+      "travel_distance_by_vehicle": {
+        "0": 129.2396653328971,
+        "3": 135.6135309840874
+      },
+      "completion_time_by_vehicle": {
+        "0": 290.7987010527296,
+        "3": 277.09389551287455
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590783,
+        "3": 53.11512547134093
+      },
+      "final_node_by_vehicle": {
+        "0": 0,
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 117.9806565200706,
+        "3": 127.98934063739021
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0,
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 9,
+      "strategy_name": "max_task_first",
+      "dispatch_time": 219.0,
+      "completion_time": 264.5782072611907,
+      "vehicle_ids": [
+        1
+      ],
+      "task_node_id": 9,
+      "score": 157.06970240924733,
+      "overtime": false,
+      "total_distance": 65.34807825504136,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          1,
+          10,
+          9,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 0
+      },
+      "travel_distance_by_vehicle": {
+        "1": 65.34807825504136
+      },
+      "completion_time_by_vehicle": {
+        "1": 264.5782072611907
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.797489041107184
+      },
+      "final_node_by_vehicle": {
+        "1": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 57.17928218798749
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0
+      }
+    },
+    {
+      "task_id": 2,
+      "strategy_name": "max_task_first",
+      "dispatch_time": 230.0,
+      "completion_time": 284.9151971695968,
+      "vehicle_ids": [
+        2
+      ],
+      "task_node_id": 16,
+      "score": 167.2126610657487,
+      "overtime": false,
+      "total_distance": 67.14981081371988,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "2": [
+          0,
+          10,
+          5,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "2": 2
+      },
+      "travel_distance_by_vehicle": {
+        "2": 67.14981081371988
+      },
+      "completion_time_by_vehicle": {
+        "2": 284.9151971695968
+      },
+      "final_battery_by_vehicle": {
+        "2": 45.77843642940977
+      },
+      "final_node_by_vehicle": {
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "2": 58.6280602518473
+      },
+      "charging_wait_by_vehicle": {
+        "2": 0.0
+      }
+    }
+  ],
+  "small:urgency_distance": [
+    {
+      "task_id": 4,
+      "strategy_name": "urgency_distance",
+      "dispatch_time": 28.0,
+      "completion_time": 127.57037861598255,
+      "vehicle_ids": [
+        1
+      ],
+      "task_node_id": 22,
+      "score": 16.185901323789736,
+      "overtime": true,
+      "total_distance": 152.35045959812857,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          10,
+          3,
+          4,
+          22,
+          4,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 2
+      },
+      "travel_distance_by_vehicle": {
+        "1": 152.35045959812857
+      },
+      "completion_time_by_vehicle": {
+        "1": 127.57037861598255
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.79748904110717
+      },
+      "final_node_by_vehicle": {
+        "1": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 15.711006629875271
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0
+      }
+    },
+    {
+      "task_id": 13,
+      "strategy_name": "urgency_distance",
+      "dispatch_time": 36.0,
+      "completion_time": 65.72344047380568,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 1,
+      "score": 212.53554432541281,
+      "overtime": false,
+      "total_distance": 36.97536004706118,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": null
+      },
+      "travel_distance_by_vehicle": {
+        "0": 36.97536004706118
+      },
+      "completion_time_by_vehicle": {
+        "0": 65.72344047380568
+      },
+      "final_battery_by_vehicle": {
+        "0": 121.43876660551393
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 6,
+      "strategy_name": "urgency_distance",
+      "dispatch_time": 40.0,
+      "completion_time": 78.74377214958007,
+      "vehicle_ids": [
+        3
+      ],
+      "task_node_id": 16,
+      "score": 191.6165670296206,
+      "overtime": false,
+      "total_distance": 60.724710438996794,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "3": [
+          0,
+          5,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "3": null
+      },
+      "travel_distance_by_vehicle": {
+        "3": 60.724710438996794
+      },
+      "completion_time_by_vehicle": {
+        "3": 78.74377214958007
+      },
+      "final_battery_by_vehicle": {
+        "3": 102.03460813681008
+      },
+      "final_node_by_vehicle": {
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "3": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 12,
+      "strategy_name": "urgency_distance",
+      "dispatch_time": 44.0,
+      "completion_time": 105.05407462154672,
+      "vehicle_ids": [
+        2
+      ],
+      "task_node_id": 4,
+      "score": 160.114406220342,
+      "overtime": false,
+      "total_distance": 80.54658247920885,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "2": [
+          0,
+          3,
+          4,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "2": null
+      },
+      "travel_distance_by_vehicle": {
+        "2": 80.54658247920885
+      },
+      "completion_time_by_vehicle": {
+        "2": 105.05407462154672
+      },
+      "final_battery_by_vehicle": {
+        "2": 67.01061539189752
+      },
+      "final_node_by_vehicle": {
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "2": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "2": 0.0
+      }
+    },
+    {
+      "task_id": 14,
+      "strategy_name": "urgency_distance",
+      "dispatch_time": 66.0,
+      "completion_time": 134.3722024057631,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 23,
+      "score": 135.61230508703787,
+      "overtime": false,
+      "total_distance": 88.71942812978305,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          10,
+          3,
+          7,
+          23,
+          7,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 2
+      },
+      "travel_distance_by_vehicle": {
+        "0": 88.71942812978305
+      },
+      "completion_time_by_vehicle": {
+        "0": 134.3722024057631
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590783
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 11.28264366719668
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 7,
+      "strategy_name": "urgency_distance",
+      "dispatch_time": 79.0,
+      "completion_time": 159.10701256645234,
+      "vehicle_ids": [
+        3
+      ],
+      "task_node_id": 15,
+      "score": 28.884235560114462,
+      "overtime": true,
+      "total_distance": 128.77712019568423,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "3": [
+          0,
+          1,
+          6,
+          15,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "3": 0
+      },
+      "travel_distance_by_vehicle": {
+        "3": 128.77712019568423
+      },
+      "completion_time_by_vehicle": {
+        "3": 159.10701256645234
+      },
+      "final_battery_by_vehicle": {
+        "3": 53.11512547134093
+      },
+      "final_node_by_vehicle": {
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "3": 72.61779007880847
+      },
+      "charging_wait_by_vehicle": {
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 8,
+      "strategy_name": "urgency_distance",
+      "dispatch_time": 128.0,
+      "completion_time": 229.51914206696517,
+      "vehicle_ids": [
+        1,
+        2
+      ],
+      "task_node_id": 20,
+      "score": -119.18567921047355,
+      "overtime": true,
+      "total_distance": 248.3509504747243,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          1,
+          6,
+          20,
+          9,
+          10,
+          0
+        ],
+        "2": [
+          0,
+          10,
+          9,
+          20,
+          9,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 0,
+        "2": 2
+      },
+      "travel_distance_by_vehicle": {
+        "1": 124.87924553187105,
+        "2": 123.47170494285326
+      },
+      "completion_time_by_vehicle": {
+        "1": 218.28048783917964,
+        "2": 229.51914206696517
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.7974890411072,
+        "2": 45.77843642940978
+      },
+      "final_node_by_vehicle": {
+        "1": 0,
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 109.26879275350339,
+        "2": 86.57015836455768
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0,
+        "2": 0.0
+      }
+    },
+    {
+      "task_id": 11,
+      "strategy_name": "urgency_distance",
+      "dispatch_time": 152.0,
+      "completion_time": 190.61769042644417,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 5,
+      "score": 203.0543134862313,
+      "overtime": false,
+      "total_distance": 38.95938578585908,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 0
+      },
+      "travel_distance_by_vehicle": {
+        "0": 38.95938578585908
+      },
+      "completion_time_by_vehicle": {
+        "0": 190.61769042644417
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590783
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 35.56534985443329
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 5,
+      "strategy_name": "urgency_distance",
+      "dispatch_time": 191.0,
+      "completion_time": 292.7121438672459,
+      "vehicle_ids": [
+        0,
+        3
+      ],
+      "task_node_id": 14,
+      "score": 15.199801241284462,
+      "overtime": false,
+      "total_distance": 264.8531963169845,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          5,
+          4,
+          13,
+          14,
+          11,
+          10,
+          0
+        ],
+        "3": [
+          0,
+          10,
+          11,
+          14,
+          11,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 0,
+        "3": 2
+      },
+      "travel_distance_by_vehicle": {
+        "0": 135.6135309840874,
+        "3": 129.2396653328971
+      },
+      "completion_time_by_vehicle": {
+        "0": 292.7121438672459,
+        "3": 280.7898843065011
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590782,
+        "3": 53.115125471340946
+      },
+      "final_node_by_vehicle": {
+        "0": 0,
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 123.79924829807591,
+        "3": 121.9738136019436
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0,
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 9,
+      "strategy_name": "urgency_distance",
+      "dispatch_time": 219.0,
+      "completion_time": 264.5782072611907,
+      "vehicle_ids": [
+        1
+      ],
+      "task_node_id": 9,
+      "score": 157.06970240924733,
+      "overtime": false,
+      "total_distance": 65.34807825504136,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          1,
+          10,
+          9,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 0
+      },
+      "travel_distance_by_vehicle": {
+        "1": 65.34807825504136
+      },
+      "completion_time_by_vehicle": {
+        "1": 264.5782072611907
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.797489041107184
+      },
+      "final_node_by_vehicle": {
+        "1": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 57.17928218798749
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0
+      }
+    },
+    {
+      "task_id": 2,
+      "strategy_name": "urgency_distance",
+      "dispatch_time": 230.0,
+      "completion_time": 284.9151971695968,
+      "vehicle_ids": [
+        2
+      ],
+      "task_node_id": 16,
+      "score": 167.2126610657487,
+      "overtime": false,
+      "total_distance": 67.14981081371988,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "2": [
+          0,
+          10,
+          5,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "2": 2
+      },
+      "travel_distance_by_vehicle": {
+        "2": 67.14981081371988
+      },
+      "completion_time_by_vehicle": {
+        "2": 284.9151971695968
+      },
+      "final_battery_by_vehicle": {
+        "2": 45.77843642940977
+      },
+      "final_node_by_vehicle": {
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "2": 58.6280602518473
+      },
+      "charging_wait_by_vehicle": {
+        "2": 0.0
+      }
+    }
+  ],
+  "small:auction_multi_agent": [
+    {
+      "task_id": 4,
+      "strategy_name": "auction_multi_agent",
+      "dispatch_time": 28.0,
+      "completion_time": 127.57037861598255,
+      "vehicle_ids": [
+        1
+      ],
+      "task_node_id": 22,
+      "score": 16.185901323789736,
+      "overtime": true,
+      "total_distance": 152.35045959812857,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          10,
+          3,
+          4,
+          22,
+          4,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 2
+      },
+      "travel_distance_by_vehicle": {
+        "1": 152.35045959812857
+      },
+      "completion_time_by_vehicle": {
+        "1": 127.57037861598255
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.79748904110717
+      },
+      "final_node_by_vehicle": {
+        "1": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 15.711006629875271
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0
+      }
+    },
+    {
+      "task_id": 13,
+      "strategy_name": "auction_multi_agent",
+      "dispatch_time": 36.0,
+      "completion_time": 65.72344047380568,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 1,
+      "score": 212.53554432541281,
+      "overtime": false,
+      "total_distance": 36.97536004706118,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": null
+      },
+      "travel_distance_by_vehicle": {
+        "0": 36.97536004706118
+      },
+      "completion_time_by_vehicle": {
+        "0": 65.72344047380568
+      },
+      "final_battery_by_vehicle": {
+        "0": 121.43876660551393
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 6,
+      "strategy_name": "auction_multi_agent",
+      "dispatch_time": 40.0,
+      "completion_time": 78.74377214958007,
+      "vehicle_ids": [
+        3
+      ],
+      "task_node_id": 16,
+      "score": 191.6165670296206,
+      "overtime": false,
+      "total_distance": 60.724710438996794,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "3": [
+          0,
+          5,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "3": null
+      },
+      "travel_distance_by_vehicle": {
+        "3": 60.724710438996794
+      },
+      "completion_time_by_vehicle": {
+        "3": 78.74377214958007
+      },
+      "final_battery_by_vehicle": {
+        "3": 102.03460813681008
+      },
+      "final_node_by_vehicle": {
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "3": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 12,
+      "strategy_name": "auction_multi_agent",
+      "dispatch_time": 44.0,
+      "completion_time": 105.05407462154672,
+      "vehicle_ids": [
+        2
+      ],
+      "task_node_id": 4,
+      "score": 160.114406220342,
+      "overtime": false,
+      "total_distance": 80.54658247920885,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "2": [
+          0,
+          3,
+          4,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "2": null
+      },
+      "travel_distance_by_vehicle": {
+        "2": 80.54658247920885
+      },
+      "completion_time_by_vehicle": {
+        "2": 105.05407462154672
+      },
+      "final_battery_by_vehicle": {
+        "2": 67.01061539189752
+      },
+      "final_node_by_vehicle": {
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "2": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "2": 0.0
+      }
+    },
+    {
+      "task_id": 14,
+      "strategy_name": "auction_multi_agent",
+      "dispatch_time": 66.0,
+      "completion_time": 134.3722024057631,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 23,
+      "score": 135.61230508703787,
+      "overtime": false,
+      "total_distance": 88.71942812978305,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          10,
+          3,
+          7,
+          23,
+          7,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 2
+      },
+      "travel_distance_by_vehicle": {
+        "0": 88.71942812978305
+      },
+      "completion_time_by_vehicle": {
+        "0": 134.3722024057631
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590783
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 11.28264366719668
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 7,
+      "strategy_name": "auction_multi_agent",
+      "dispatch_time": 79.0,
+      "completion_time": 159.10701256645234,
+      "vehicle_ids": [
+        3
+      ],
+      "task_node_id": 15,
+      "score": 28.884235560114462,
+      "overtime": true,
+      "total_distance": 128.77712019568423,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "3": [
+          0,
+          1,
+          6,
+          15,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "3": 0
+      },
+      "travel_distance_by_vehicle": {
+        "3": 128.77712019568423
+      },
+      "completion_time_by_vehicle": {
+        "3": 159.10701256645234
+      },
+      "final_battery_by_vehicle": {
+        "3": 53.11512547134093
+      },
+      "final_node_by_vehicle": {
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "3": 72.61779007880847
+      },
+      "charging_wait_by_vehicle": {
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 8,
+      "strategy_name": "auction_multi_agent",
+      "dispatch_time": 128.0,
+      "completion_time": 229.51914206696517,
+      "vehicle_ids": [
+        1,
+        2
+      ],
+      "task_node_id": 20,
+      "score": -119.18567921047355,
+      "overtime": true,
+      "total_distance": 248.3509504747243,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          1,
+          6,
+          20,
+          9,
+          10,
+          0
+        ],
+        "2": [
+          0,
+          10,
+          9,
+          20,
+          9,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 0,
+        "2": 2
+      },
+      "travel_distance_by_vehicle": {
+        "1": 124.87924553187105,
+        "2": 123.47170494285326
+      },
+      "completion_time_by_vehicle": {
+        "1": 218.28048783917964,
+        "2": 229.51914206696517
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.7974890411072,
+        "2": 45.77843642940978
+      },
+      "final_node_by_vehicle": {
+        "1": 0,
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 109.26879275350339,
+        "2": 86.57015836455768
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0,
+        "2": 0.0
+      }
+    },
+    {
+      "task_id": 11,
+      "strategy_name": "auction_multi_agent",
+      "dispatch_time": 152.0,
+      "completion_time": 190.61769042644417,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 5,
+      "score": 203.0543134862313,
+      "overtime": false,
+      "total_distance": 38.95938578585908,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 0
+      },
+      "travel_distance_by_vehicle": {
+        "0": 38.95938578585908
+      },
+      "completion_time_by_vehicle": {
+        "0": 190.61769042644417
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590783
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 35.56534985443329
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 5,
+      "strategy_name": "auction_multi_agent",
+      "dispatch_time": 191.0,
+      "completion_time": 292.7121438672459,
+      "vehicle_ids": [
+        0,
+        3
+      ],
+      "task_node_id": 14,
+      "score": 15.199801241284462,
+      "overtime": false,
+      "total_distance": 264.8531963169845,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          5,
+          4,
+          13,
+          14,
+          11,
+          10,
+          0
+        ],
+        "3": [
+          0,
+          10,
+          11,
+          14,
+          11,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 0,
+        "3": 2
+      },
+      "travel_distance_by_vehicle": {
+        "0": 135.6135309840874,
+        "3": 129.2396653328971
+      },
+      "completion_time_by_vehicle": {
+        "0": 292.7121438672459,
+        "3": 280.7898843065011
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590782,
+        "3": 53.115125471340946
+      },
+      "final_node_by_vehicle": {
+        "0": 0,
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 123.79924829807591,
+        "3": 121.9738136019436
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0,
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 9,
+      "strategy_name": "auction_multi_agent",
+      "dispatch_time": 219.0,
+      "completion_time": 264.5782072611907,
+      "vehicle_ids": [
+        1
+      ],
+      "task_node_id": 9,
+      "score": 157.06970240924733,
+      "overtime": false,
+      "total_distance": 65.34807825504136,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          1,
+          10,
+          9,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 0
+      },
+      "travel_distance_by_vehicle": {
+        "1": 65.34807825504136
+      },
+      "completion_time_by_vehicle": {
+        "1": 264.5782072611907
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.797489041107184
+      },
+      "final_node_by_vehicle": {
+        "1": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 57.17928218798749
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0
+      }
+    },
+    {
+      "task_id": 2,
+      "strategy_name": "auction_multi_agent",
+      "dispatch_time": 230.0,
+      "completion_time": 284.9151971695968,
+      "vehicle_ids": [
+        2
+      ],
+      "task_node_id": 16,
+      "score": 167.2126610657487,
+      "overtime": false,
+      "total_distance": 67.14981081371988,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "2": [
+          0,
+          10,
+          5,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "2": 2
+      },
+      "travel_distance_by_vehicle": {
+        "2": 67.14981081371988
+      },
+      "completion_time_by_vehicle": {
+        "2": 284.9151971695968
+      },
+      "final_battery_by_vehicle": {
+        "2": 45.77843642940977
+      },
+      "final_node_by_vehicle": {
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "2": 58.6280602518473
+      },
+      "charging_wait_by_vehicle": {
+        "2": 0.0
+      }
+    }
+  ],
+  "small:metaheuristic_sa": [
+    {
+      "task_id": 4,
+      "strategy_name": "metaheuristic_sa",
+      "dispatch_time": 28.0,
+      "completion_time": 127.57037861598255,
+      "vehicle_ids": [
+        1
+      ],
+      "task_node_id": 22,
+      "score": 16.185901323789736,
+      "overtime": true,
+      "total_distance": 152.35045959812857,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          10,
+          3,
+          4,
+          22,
+          4,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 2
+      },
+      "travel_distance_by_vehicle": {
+        "1": 152.35045959812857
+      },
+      "completion_time_by_vehicle": {
+        "1": 127.57037861598255
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.79748904110717
+      },
+      "final_node_by_vehicle": {
+        "1": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 15.711006629875271
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0
+      }
+    },
+    {
+      "task_id": 13,
+      "strategy_name": "metaheuristic_sa",
+      "dispatch_time": 36.0,
+      "completion_time": 65.72344047380568,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 1,
+      "score": 212.53554432541281,
+      "overtime": false,
+      "total_distance": 36.97536004706118,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": null
+      },
+      "travel_distance_by_vehicle": {
+        "0": 36.97536004706118
+      },
+      "completion_time_by_vehicle": {
+        "0": 65.72344047380568
+      },
+      "final_battery_by_vehicle": {
+        "0": 121.43876660551393
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 6,
+      "strategy_name": "metaheuristic_sa",
+      "dispatch_time": 40.0,
+      "completion_time": 78.74377214958007,
+      "vehicle_ids": [
+        3
+      ],
+      "task_node_id": 16,
+      "score": 191.6165670296206,
+      "overtime": false,
+      "total_distance": 60.724710438996794,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "3": [
+          0,
+          5,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "3": null
+      },
+      "travel_distance_by_vehicle": {
+        "3": 60.724710438996794
+      },
+      "completion_time_by_vehicle": {
+        "3": 78.74377214958007
+      },
+      "final_battery_by_vehicle": {
+        "3": 102.03460813681008
+      },
+      "final_node_by_vehicle": {
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "3": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 12,
+      "strategy_name": "metaheuristic_sa",
+      "dispatch_time": 44.0,
+      "completion_time": 105.05407462154672,
+      "vehicle_ids": [
+        2
+      ],
+      "task_node_id": 4,
+      "score": 160.114406220342,
+      "overtime": false,
+      "total_distance": 80.54658247920885,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "2": [
+          0,
+          3,
+          4,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "2": null
+      },
+      "travel_distance_by_vehicle": {
+        "2": 80.54658247920885
+      },
+      "completion_time_by_vehicle": {
+        "2": 105.05407462154672
+      },
+      "final_battery_by_vehicle": {
+        "2": 67.01061539189752
+      },
+      "final_node_by_vehicle": {
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "2": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "2": 0.0
+      }
+    },
+    {
+      "task_id": 14,
+      "strategy_name": "metaheuristic_sa",
+      "dispatch_time": 66.0,
+      "completion_time": 134.3722024057631,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 23,
+      "score": 135.61230508703787,
+      "overtime": false,
+      "total_distance": 88.71942812978305,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          10,
+          3,
+          7,
+          23,
+          7,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 2
+      },
+      "travel_distance_by_vehicle": {
+        "0": 88.71942812978305
+      },
+      "completion_time_by_vehicle": {
+        "0": 134.3722024057631
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590783
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 11.28264366719668
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 7,
+      "strategy_name": "metaheuristic_sa",
+      "dispatch_time": 79.0,
+      "completion_time": 159.10701256645234,
+      "vehicle_ids": [
+        3
+      ],
+      "task_node_id": 15,
+      "score": 28.884235560114462,
+      "overtime": true,
+      "total_distance": 128.77712019568423,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "3": [
+          0,
+          1,
+          6,
+          15,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "3": 0
+      },
+      "travel_distance_by_vehicle": {
+        "3": 128.77712019568423
+      },
+      "completion_time_by_vehicle": {
+        "3": 159.10701256645234
+      },
+      "final_battery_by_vehicle": {
+        "3": 53.11512547134093
+      },
+      "final_node_by_vehicle": {
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "3": 72.61779007880847
+      },
+      "charging_wait_by_vehicle": {
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 8,
+      "strategy_name": "metaheuristic_sa",
+      "dispatch_time": 128.0,
+      "completion_time": 229.51914206696517,
+      "vehicle_ids": [
+        1,
+        2
+      ],
+      "task_node_id": 20,
+      "score": -119.18567921047355,
+      "overtime": true,
+      "total_distance": 248.3509504747243,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          1,
+          6,
+          20,
+          9,
+          10,
+          0
+        ],
+        "2": [
+          0,
+          10,
+          9,
+          20,
+          9,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 0,
+        "2": 2
+      },
+      "travel_distance_by_vehicle": {
+        "1": 124.87924553187105,
+        "2": 123.47170494285326
+      },
+      "completion_time_by_vehicle": {
+        "1": 218.28048783917964,
+        "2": 229.51914206696517
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.7974890411072,
+        "2": 45.77843642940978
+      },
+      "final_node_by_vehicle": {
+        "1": 0,
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 109.26879275350339,
+        "2": 86.57015836455768
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0,
+        "2": 0.0
+      }
+    },
+    {
+      "task_id": 11,
+      "strategy_name": "metaheuristic_sa",
+      "dispatch_time": 152.0,
+      "completion_time": 190.61769042644417,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 5,
+      "score": 203.0543134862313,
+      "overtime": false,
+      "total_distance": 38.95938578585908,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 0
+      },
+      "travel_distance_by_vehicle": {
+        "0": 38.95938578585908
+      },
+      "completion_time_by_vehicle": {
+        "0": 190.61769042644417
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590783
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 35.56534985443329
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 5,
+      "strategy_name": "metaheuristic_sa",
+      "dispatch_time": 191.0,
+      "completion_time": 292.7121438672459,
+      "vehicle_ids": [
+        0,
+        3
+      ],
+      "task_node_id": 14,
+      "score": 15.199801241284462,
+      "overtime": false,
+      "total_distance": 264.8531963169845,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          5,
+          4,
+          13,
+          14,
+          11,
+          10,
+          0
+        ],
+        "3": [
+          0,
+          10,
+          11,
+          14,
+          11,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 0,
+        "3": 2
+      },
+      "travel_distance_by_vehicle": {
+        "0": 135.6135309840874,
+        "3": 129.2396653328971
+      },
+      "completion_time_by_vehicle": {
+        "0": 292.7121438672459,
+        "3": 280.7898843065011
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590782,
+        "3": 53.115125471340946
+      },
+      "final_node_by_vehicle": {
+        "0": 0,
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 123.79924829807591,
+        "3": 121.9738136019436
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0,
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 9,
+      "strategy_name": "metaheuristic_sa",
+      "dispatch_time": 219.0,
+      "completion_time": 264.5782072611907,
+      "vehicle_ids": [
+        1
+      ],
+      "task_node_id": 9,
+      "score": 157.06970240924733,
+      "overtime": false,
+      "total_distance": 65.34807825504136,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          1,
+          10,
+          9,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 0
+      },
+      "travel_distance_by_vehicle": {
+        "1": 65.34807825504136
+      },
+      "completion_time_by_vehicle": {
+        "1": 264.5782072611907
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.797489041107184
+      },
+      "final_node_by_vehicle": {
+        "1": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 57.17928218798749
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0
+      }
+    },
+    {
+      "task_id": 2,
+      "strategy_name": "metaheuristic_sa",
+      "dispatch_time": 230.0,
+      "completion_time": 284.9151971695968,
+      "vehicle_ids": [
+        2
+      ],
+      "task_node_id": 16,
+      "score": 167.2126610657487,
+      "overtime": false,
+      "total_distance": 67.14981081371988,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "2": [
+          0,
+          10,
+          5,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "2": 2
+      },
+      "travel_distance_by_vehicle": {
+        "2": 67.14981081371988
+      },
+      "completion_time_by_vehicle": {
+        "2": 284.9151971695968
+      },
+      "final_battery_by_vehicle": {
+        "2": 45.77843642940977
+      },
+      "final_node_by_vehicle": {
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "2": 58.6280602518473
+      },
+      "charging_wait_by_vehicle": {
+        "2": 0.0
+      }
+    }
+  ],
+  "small:reinforcement_q": [
+    {
+      "task_id": 4,
+      "strategy_name": "reinforcement_q",
+      "dispatch_time": 28.0,
+      "completion_time": 127.57037861598255,
+      "vehicle_ids": [
+        1
+      ],
+      "task_node_id": 22,
+      "score": 16.185901323789736,
+      "overtime": true,
+      "total_distance": 152.35045959812857,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          10,
+          3,
+          4,
+          22,
+          4,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 2
+      },
+      "travel_distance_by_vehicle": {
+        "1": 152.35045959812857
+      },
+      "completion_time_by_vehicle": {
+        "1": 127.57037861598255
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.79748904110717
+      },
+      "final_node_by_vehicle": {
+        "1": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 15.711006629875271
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0
+      }
+    },
+    {
+      "task_id": 13,
+      "strategy_name": "reinforcement_q",
+      "dispatch_time": 36.0,
+      "completion_time": 65.72344047380568,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 1,
+      "score": 212.53554432541281,
+      "overtime": false,
+      "total_distance": 36.97536004706118,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": null
+      },
+      "travel_distance_by_vehicle": {
+        "0": 36.97536004706118
+      },
+      "completion_time_by_vehicle": {
+        "0": 65.72344047380568
+      },
+      "final_battery_by_vehicle": {
+        "0": 121.43876660551393
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 6,
+      "strategy_name": "reinforcement_q",
+      "dispatch_time": 40.0,
+      "completion_time": 78.74377214958007,
+      "vehicle_ids": [
+        3
+      ],
+      "task_node_id": 16,
+      "score": 191.6165670296206,
+      "overtime": false,
+      "total_distance": 60.724710438996794,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "3": [
+          0,
+          5,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "3": null
+      },
+      "travel_distance_by_vehicle": {
+        "3": 60.724710438996794
+      },
+      "completion_time_by_vehicle": {
+        "3": 78.74377214958007
+      },
+      "final_battery_by_vehicle": {
+        "3": 102.03460813681008
+      },
+      "final_node_by_vehicle": {
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "3": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 12,
+      "strategy_name": "reinforcement_q",
+      "dispatch_time": 44.0,
+      "completion_time": 105.05407462154672,
+      "vehicle_ids": [
+        2
+      ],
+      "task_node_id": 4,
+      "score": 160.114406220342,
+      "overtime": false,
+      "total_distance": 80.54658247920885,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "2": [
+          0,
+          3,
+          4,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "2": null
+      },
+      "travel_distance_by_vehicle": {
+        "2": 80.54658247920885
+      },
+      "completion_time_by_vehicle": {
+        "2": 105.05407462154672
+      },
+      "final_battery_by_vehicle": {
+        "2": 67.01061539189752
+      },
+      "final_node_by_vehicle": {
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "2": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "2": 0.0
+      }
+    },
+    {
+      "task_id": 14,
+      "strategy_name": "reinforcement_q",
+      "dispatch_time": 66.0,
+      "completion_time": 134.3722024057631,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 23,
+      "score": 135.61230508703787,
+      "overtime": false,
+      "total_distance": 88.71942812978305,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          10,
+          3,
+          7,
+          23,
+          7,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 2
+      },
+      "travel_distance_by_vehicle": {
+        "0": 88.71942812978305
+      },
+      "completion_time_by_vehicle": {
+        "0": 134.3722024057631
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590783
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 11.28264366719668
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 7,
+      "strategy_name": "reinforcement_q",
+      "dispatch_time": 79.0,
+      "completion_time": 159.10701256645234,
+      "vehicle_ids": [
+        3
+      ],
+      "task_node_id": 15,
+      "score": 28.884235560114462,
+      "overtime": true,
+      "total_distance": 128.77712019568423,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "3": [
+          0,
+          1,
+          6,
+          15,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "3": 0
+      },
+      "travel_distance_by_vehicle": {
+        "3": 128.77712019568423
+      },
+      "completion_time_by_vehicle": {
+        "3": 159.10701256645234
+      },
+      "final_battery_by_vehicle": {
+        "3": 53.11512547134093
+      },
+      "final_node_by_vehicle": {
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "3": 72.61779007880847
+      },
+      "charging_wait_by_vehicle": {
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 8,
+      "strategy_name": "reinforcement_q",
+      "dispatch_time": 128.0,
+      "completion_time": 229.51914206696517,
+      "vehicle_ids": [
+        1,
+        2
+      ],
+      "task_node_id": 20,
+      "score": -119.18567921047355,
+      "overtime": true,
+      "total_distance": 248.3509504747243,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          1,
+          6,
+          20,
+          9,
+          10,
+          0
+        ],
+        "2": [
+          0,
+          10,
+          9,
+          20,
+          9,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 0,
+        "2": 2
+      },
+      "travel_distance_by_vehicle": {
+        "1": 124.87924553187105,
+        "2": 123.47170494285326
+      },
+      "completion_time_by_vehicle": {
+        "1": 218.28048783917964,
+        "2": 229.51914206696517
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.7974890411072,
+        "2": 45.77843642940978
+      },
+      "final_node_by_vehicle": {
+        "1": 0,
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 109.26879275350339,
+        "2": 86.57015836455768
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0,
+        "2": 0.0
+      }
+    },
+    {
+      "task_id": 11,
+      "strategy_name": "reinforcement_q",
+      "dispatch_time": 152.0,
+      "completion_time": 190.61769042644417,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 5,
+      "score": 203.0543134862313,
+      "overtime": false,
+      "total_distance": 38.95938578585908,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 0
+      },
+      "travel_distance_by_vehicle": {
+        "0": 38.95938578585908
+      },
+      "completion_time_by_vehicle": {
+        "0": 190.61769042644417
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590783
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 35.56534985443329
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 5,
+      "strategy_name": "reinforcement_q",
+      "dispatch_time": 191.0,
+      "completion_time": 292.7121438672459,
+      "vehicle_ids": [
+        0,
+        3
+      ],
+      "task_node_id": 14,
+      "score": 15.199801241284462,
+      "overtime": false,
+      "total_distance": 264.8531963169845,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          5,
+          4,
+          13,
+          14,
+          11,
+          10,
+          0
+        ],
+        "3": [
+          0,
+          10,
+          11,
+          14,
+          11,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 0,
+        "3": 2
+      },
+      "travel_distance_by_vehicle": {
+        "0": 135.6135309840874,
+        "3": 129.2396653328971
+      },
+      "completion_time_by_vehicle": {
+        "0": 292.7121438672459,
+        "3": 280.7898843065011
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590782,
+        "3": 53.115125471340946
+      },
+      "final_node_by_vehicle": {
+        "0": 0,
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 123.79924829807591,
+        "3": 121.9738136019436
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0,
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 9,
+      "strategy_name": "reinforcement_q",
+      "dispatch_time": 219.0,
+      "completion_time": 264.5782072611907,
+      "vehicle_ids": [
+        1
+      ],
+      "task_node_id": 9,
+      "score": 157.06970240924733,
+      "overtime": false,
+      "total_distance": 65.34807825504136,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          1,
+          10,
+          9,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 0
+      },
+      "travel_distance_by_vehicle": {
+        "1": 65.34807825504136
+      },
+      "completion_time_by_vehicle": {
+        "1": 264.5782072611907
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.797489041107184
+      },
+      "final_node_by_vehicle": {
+        "1": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 57.17928218798749
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0
+      }
+    },
+    {
+      "task_id": 2,
+      "strategy_name": "reinforcement_q",
+      "dispatch_time": 230.0,
+      "completion_time": 284.9151971695968,
+      "vehicle_ids": [
+        2
+      ],
+      "task_node_id": 16,
+      "score": 167.2126610657487,
+      "overtime": false,
+      "total_distance": 67.14981081371988,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "2": [
+          0,
+          10,
+          5,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "2": 2
+      },
+      "travel_distance_by_vehicle": {
+        "2": 67.14981081371988
+      },
+      "completion_time_by_vehicle": {
+        "2": 284.9151971695968
+      },
+      "final_battery_by_vehicle": {
+        "2": 45.77843642940977
+      },
+      "final_node_by_vehicle": {
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "2": 58.6280602518473
+      },
+      "charging_wait_by_vehicle": {
+        "2": 0.0
+      }
+    }
+  ],
+  "small:hyper_heuristic_ucb": [
+    {
+      "task_id": 4,
+      "strategy_name": "hyper_heuristic_ucb",
+      "dispatch_time": 28.0,
+      "completion_time": 127.57037861598255,
+      "vehicle_ids": [
+        1
+      ],
+      "task_node_id": 22,
+      "score": 16.185901323789736,
+      "overtime": true,
+      "total_distance": 152.35045959812857,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          10,
+          3,
+          4,
+          22,
+          4,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 2
+      },
+      "travel_distance_by_vehicle": {
+        "1": 152.35045959812857
+      },
+      "completion_time_by_vehicle": {
+        "1": 127.57037861598255
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.79748904110717
+      },
+      "final_node_by_vehicle": {
+        "1": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 15.711006629875271
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0
+      }
+    },
+    {
+      "task_id": 13,
+      "strategy_name": "hyper_heuristic_ucb",
+      "dispatch_time": 36.0,
+      "completion_time": 65.72344047380568,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 1,
+      "score": 212.53554432541281,
+      "overtime": false,
+      "total_distance": 36.97536004706118,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": null
+      },
+      "travel_distance_by_vehicle": {
+        "0": 36.97536004706118
+      },
+      "completion_time_by_vehicle": {
+        "0": 65.72344047380568
+      },
+      "final_battery_by_vehicle": {
+        "0": 121.43876660551393
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 6,
+      "strategy_name": "hyper_heuristic_ucb",
+      "dispatch_time": 40.0,
+      "completion_time": 78.74377214958007,
+      "vehicle_ids": [
+        3
+      ],
+      "task_node_id": 16,
+      "score": 191.6165670296206,
+      "overtime": false,
+      "total_distance": 60.724710438996794,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "3": [
+          0,
+          5,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "3": null
+      },
+      "travel_distance_by_vehicle": {
+        "3": 60.724710438996794
+      },
+      "completion_time_by_vehicle": {
+        "3": 78.74377214958007
+      },
+      "final_battery_by_vehicle": {
+        "3": 102.03460813681008
+      },
+      "final_node_by_vehicle": {
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "3": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 12,
+      "strategy_name": "hyper_heuristic_ucb",
+      "dispatch_time": 44.0,
+      "completion_time": 105.05407462154672,
+      "vehicle_ids": [
+        2
+      ],
+      "task_node_id": 4,
+      "score": 160.114406220342,
+      "overtime": false,
+      "total_distance": 80.54658247920885,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "2": [
+          0,
+          3,
+          4,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "2": null
+      },
+      "travel_distance_by_vehicle": {
+        "2": 80.54658247920885
+      },
+      "completion_time_by_vehicle": {
+        "2": 105.05407462154672
+      },
+      "final_battery_by_vehicle": {
+        "2": 67.01061539189752
+      },
+      "final_node_by_vehicle": {
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "2": 0.0
+      },
+      "charging_wait_by_vehicle": {
+        "2": 0.0
+      }
+    },
+    {
+      "task_id": 14,
+      "strategy_name": "hyper_heuristic_ucb",
+      "dispatch_time": 66.0,
+      "completion_time": 134.3722024057631,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 23,
+      "score": 135.61230508703787,
+      "overtime": false,
+      "total_distance": 88.71942812978305,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          10,
+          3,
+          7,
+          23,
+          7,
+          3,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 2
+      },
+      "travel_distance_by_vehicle": {
+        "0": 88.71942812978305
+      },
+      "completion_time_by_vehicle": {
+        "0": 134.3722024057631
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590783
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 11.28264366719668
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 7,
+      "strategy_name": "hyper_heuristic_ucb",
+      "dispatch_time": 79.0,
+      "completion_time": 159.10701256645234,
+      "vehicle_ids": [
+        3
+      ],
+      "task_node_id": 15,
+      "score": 28.884235560114462,
+      "overtime": true,
+      "total_distance": 128.77712019568423,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "3": [
+          0,
+          1,
+          6,
+          15,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "3": 0
+      },
+      "travel_distance_by_vehicle": {
+        "3": 128.77712019568423
+      },
+      "completion_time_by_vehicle": {
+        "3": 159.10701256645234
+      },
+      "final_battery_by_vehicle": {
+        "3": 53.11512547134093
+      },
+      "final_node_by_vehicle": {
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "3": 72.61779007880847
+      },
+      "charging_wait_by_vehicle": {
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 8,
+      "strategy_name": "hyper_heuristic_ucb",
+      "dispatch_time": 128.0,
+      "completion_time": 229.51914206696517,
+      "vehicle_ids": [
+        1,
+        2
+      ],
+      "task_node_id": 20,
+      "score": -119.18567921047355,
+      "overtime": true,
+      "total_distance": 248.3509504747243,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          1,
+          6,
+          20,
+          9,
+          10,
+          0
+        ],
+        "2": [
+          0,
+          10,
+          9,
+          20,
+          9,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 0,
+        "2": 2
+      },
+      "travel_distance_by_vehicle": {
+        "1": 124.87924553187105,
+        "2": 123.47170494285326
+      },
+      "completion_time_by_vehicle": {
+        "1": 218.28048783917964,
+        "2": 229.51914206696517
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.7974890411072,
+        "2": 45.77843642940978
+      },
+      "final_node_by_vehicle": {
+        "1": 0,
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 109.26879275350339,
+        "2": 86.57015836455768
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0,
+        "2": 0.0
+      }
+    },
+    {
+      "task_id": 11,
+      "strategy_name": "hyper_heuristic_ucb",
+      "dispatch_time": 152.0,
+      "completion_time": 190.61769042644417,
+      "vehicle_ids": [
+        0
+      ],
+      "task_node_id": 5,
+      "score": 203.0543134862313,
+      "overtime": false,
+      "total_distance": 38.95938578585908,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 0
+      },
+      "travel_distance_by_vehicle": {
+        "0": 38.95938578585908
+      },
+      "completion_time_by_vehicle": {
+        "0": 190.61769042644417
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590783
+      },
+      "final_node_by_vehicle": {
+        "0": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 35.56534985443329
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0
+      }
+    },
+    {
+      "task_id": 5,
+      "strategy_name": "hyper_heuristic_ucb",
+      "dispatch_time": 191.0,
+      "completion_time": 292.7121438672459,
+      "vehicle_ids": [
+        0,
+        3
+      ],
+      "task_node_id": 14,
+      "score": 15.199801241284462,
+      "overtime": false,
+      "total_distance": 264.8531963169845,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "0": [
+          0,
+          1,
+          5,
+          4,
+          13,
+          14,
+          11,
+          10,
+          0
+        ],
+        "3": [
+          0,
+          10,
+          11,
+          14,
+          11,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "0": 0,
+        "3": 2
+      },
+      "travel_distance_by_vehicle": {
+        "0": 135.6135309840874,
+        "3": 129.2396653328971
+      },
+      "completion_time_by_vehicle": {
+        "0": 292.7121438672459,
+        "3": 280.7898843065011
+      },
+      "final_battery_by_vehicle": {
+        "0": 51.73097788590782,
+        "3": 53.115125471340946
+      },
+      "final_node_by_vehicle": {
+        "0": 0,
+        "3": 0
+      },
+      "charge_amount_by_vehicle": {
+        "0": 123.79924829807591,
+        "3": 121.9738136019436
+      },
+      "charging_wait_by_vehicle": {
+        "0": 0.0,
+        "3": 0.0
+      }
+    },
+    {
+      "task_id": 9,
+      "strategy_name": "hyper_heuristic_ucb",
+      "dispatch_time": 219.0,
+      "completion_time": 264.5782072611907,
+      "vehicle_ids": [
+        1
+      ],
+      "task_node_id": 9,
+      "score": 157.06970240924733,
+      "overtime": false,
+      "total_distance": 65.34807825504136,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "1": [
+          0,
+          1,
+          10,
+          9,
+          10,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "1": 0
+      },
+      "travel_distance_by_vehicle": {
+        "1": 65.34807825504136
+      },
+      "completion_time_by_vehicle": {
+        "1": 264.5782072611907
+      },
+      "final_battery_by_vehicle": {
+        "1": 58.797489041107184
+      },
+      "final_node_by_vehicle": {
+        "1": 0
+      },
+      "charge_amount_by_vehicle": {
+        "1": 57.17928218798749
+      },
+      "charging_wait_by_vehicle": {
+        "1": 0.0
+      }
+    },
+    {
+      "task_id": 2,
+      "strategy_name": "hyper_heuristic_ucb",
+      "dispatch_time": 230.0,
+      "completion_time": 284.9151971695968,
+      "vehicle_ids": [
+        2
+      ],
+      "task_node_id": 16,
+      "score": 167.2126610657487,
+      "overtime": false,
+      "total_distance": 67.14981081371988,
+      "total_charging_wait": 0.0,
+      "route_by_vehicle": {
+        "2": [
+          0,
+          10,
+          5,
+          16,
+          5,
+          0
+        ]
+      },
+      "station_by_vehicle": {
+        "2": 2
+      },
+      "travel_distance_by_vehicle": {
+        "2": 67.14981081371988
+      },
+      "completion_time_by_vehicle": {
+        "2": 284.9151971695968
+      },
+      "final_battery_by_vehicle": {
+        "2": 45.77843642940977
+      },
+      "final_node_by_vehicle": {
+        "2": 0
+      },
+      "charge_amount_by_vehicle": {
+        "2": 58.6280602518473
+      },
+      "charging_wait_by_vehicle": {
+        "2": 0.0
+      }
+    }
+  ]
+}

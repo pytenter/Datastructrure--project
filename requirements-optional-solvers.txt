@@ -1,0 +1,7 @@
+# Optional exact solver dependencies.
+# Install only if you need static exact comparison backends.
+
+gurobipy>=12.0.0
+docplex>=2.25.0
+cplex>=22.1.0
+

@@ -1,0 +1,106 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EV Fleet Dispatch Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div>
+        <h1>EV Fleet Dispatch Dashboard</h1>
+        <p>HTML + CSS + JavaScript route replay panel</p>
+      </div>
+      <div class="hero-pill">Route Replay</div>
+    </header>
+
+    <section class="controls card">
+      <label>
+        Scale
+        <select id="scaleSelect"></select>
+      </label>
+      <label>
+        Strategy
+        <select id="strategySelect"></select>
+      </label>
+      <label>
+        Seed
+        <input id="seedInput" type="number" value="20260309">
+      </label>
+      <label class="checkbox">
+        <input id="collabInput" type="checkbox" checked>
+        Allow Collaboration
+      </label>
+      <button id="runBtn">Run Simulation</button>
+      <button id="compareBtn" class="ghost">Compare Strategies</button>
+      <button id="playBtn">Play</button>
+      <button id="pauseBtn" class="ghost">Pause</button>
+      <button id="stepBtn" class="ghost">Step</button>
+      <button id="resetBtn" class="ghost">Reset Replay</button>
+    </section>
+
+    <main class="workspace">
+      <section class="left-pane">
+        <section class="map-wrap card">
+          <svg id="mapSvg" viewBox="0 0 1000 700" aria-label="dispatch map">
+            <defs>
+              <filter id="lineGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="#8cb3ff" flood-opacity="0.55"></feDropShadow>
+              </filter>
+            </defs>
+            <g id="edgesLayer"></g>
+            <g id="historyLayer"></g>
+            <g id="tasksLayer"></g>
+            <g id="stationsLayer"></g>
+            <g id="depotLayer"></g>
+            <g id="activeRouteLayer"></g>
+            <g id="carLayer"></g>
+          </svg>
+
+          <div class="legend">
+            <span><i class="dot pending"></i>Pending Task</span>
+            <span><i class="dot done"></i>Completed Task</span>
+            <span><i class="icon car"></i>Car Animation</span>
+            <span><i class="icon station"></i>Charging Icon</span>
+          </div>
+        </section>
+
+        <section class="card stats stats-bottom">
+          <h2>Realtime Data</h2>
+          <div id="summaryBox">Status: Not started</div>
+          <ul id="metricsList"></ul>
+        </section>
+      </section>
+
+      <aside class="side-wrap">
+
+        <section class="card vehicle-status">
+          <h2>Vehicle Status</h2>
+          <div id="vehicleStatusList" class="status-list empty">Run simulation to view vehicle states</div>
+        </section>
+
+        <section class="card task-list">
+          <h2>Task List</h2>
+          <div id="taskListBox" class="status-list empty">Run simulation to view tasks</div>
+        </section>
+
+        <section class="card ranking">
+          <h2>Strategy Ranking</h2>
+          <div id="rankingList" class="ranking-list empty">Click "Compare Strategies" to generate ranking</div>
+        </section>
+
+        <section class="card logs">
+          <h2>Replay Log</h2>
+          <pre id="logBox"></pre>
+        </section>
+      </aside>
+    </main>
+
+    <footer id="statusBar">Status: Waiting for simulation</footer>
+  </div>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>
