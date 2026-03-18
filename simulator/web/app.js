@@ -4,16 +4,16 @@ const MAP_HEIGHT = 700;
 const MAP_PADDING = 42;
 
 const VEHICLE_COLORS = [
-  "#2D6A4F",
-  "#BC4749",
-  "#1D3557",
-  "#457B9D",
-  "#9C6644",
-  "#3A86FF",
-  "#6A994E",
-  "#FF006E",
-  "#6C757D",
-  "#8338EC"
+  "#1F7EDD",
+  "#FF6A1A",
+  "#E84855",
+  "#1FB77B",
+  "#FFB221",
+  "#0F4C81",
+  "#FF8C42",
+  "#2B66D9",
+  "#C44230",
+  "#3AAE95"
 ];
 
 const dom = {
@@ -303,7 +303,9 @@ async function stepReplay() {
   state.taskState.set(event.task_id, "delivering");
 
   const eventRoutes = Array.isArray(event.routes) ? event.routes : [];
-  state.activeReplayVehicleIds = new Set(eventRoutes.map((route) => Number(route.vehicle_id)));
+  // Keep status panel aligned with actual animation on map:
+  // vehicle ids are marked active only when their animation starts.
+  state.activeReplayVehicleIds = new Set();
   eventRoutes.forEach((route) => {
     routes.push(route);
     state.routeHistory.push({
@@ -600,6 +602,7 @@ function drawRouteEndCars(routes) {
 }
 
 async function animateCarsAlongRoutes(routes, dispatchTime) {
+  state.activeReplayVehicleIds = new Set();
   const jobs = routes
     .map((route) => {
       const points = routeToPoints(route.route_nodes);
@@ -611,6 +614,7 @@ async function animateCarsAlongRoutes(routes, dispatchTime) {
     .filter(Boolean);
 
   await Promise.all(jobs);
+  renderVehicleStatuses();
 }
 
 async function animateSingleCar(route, points, dispatchTime) {
@@ -631,6 +635,7 @@ async function animateSingleCar(route, points, dispatchTime) {
   const completion = Number(route.completion_time ?? dispatch + 1);
 
   if (points.length === 1) {
+    state.activeReplayVehicleIds.delete(vehicleId);
     placeCar(car, points[0]);
     if (vehicle) {
       vehicle.battery = finalBattery;
@@ -654,6 +659,9 @@ async function animateSingleCar(route, points, dispatchTime) {
     preChargeRatio
   );
 
+  state.activeReplayVehicleIds.add(vehicleId);
+  renderVehicleStatuses();
+
   return new Promise((resolve) => {
     const start = performance.now();
 
@@ -676,6 +684,7 @@ async function animateSingleCar(route, points, dispatchTime) {
       if (progress < 1) {
         requestAnimationFrame(frame);
       } else {
+        state.activeReplayVehicleIds.delete(vehicleId);
         if (vehicle) {
           vehicle.battery = finalBattery;
           vehicle.currentNode = Number(route.final_node ?? vehicle.currentNode);

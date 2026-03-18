@@ -148,7 +148,7 @@
     "solver_status": "OPTIMAL",
     "solver_optimal": true,
     "solver_gap": 0.0,
-    "solver_runtime_sec": 0.2049729824066162,
+    "solver_runtime_sec": 0.05076193809509277,
     "solver_objective": 2020.4226143776236
   },
   {
