@@ -1,0 +1,154 @@
+[
+  {
+    "scenario": "small",
+    "strategy": "nearest_task_first",
+    "mode": "dynamic",
+    "completed": 7,
+    "unserved": 9,
+    "overtime": 0,
+    "distance": 424.45483731283866,
+    "avg_response_time": 43.657197697595414,
+    "charging_wait": 0.0,
+    "score": 768.9631199083142,
+    "station_utilization": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 0.0
+    },
+    "seed": 20260309,
+    "allow_collaboration": true
+  },
+  {
+    "scenario": "small",
+    "strategy": "max_task_first",
+    "mode": "dynamic",
+    "completed": 7,
+    "unserved": 9,
+    "overtime": 0,
+    "distance": 424.45483731283866,
+    "avg_response_time": 56.73061498788144,
+    "charging_wait": 0.0,
+    "score": 682.0248949279126,
+    "station_utilization": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 0.0
+    },
+    "seed": 20260309,
+    "allow_collaboration": true
+  },
+  {
+    "scenario": "small",
+    "strategy": "urgency_distance",
+    "mode": "dynamic",
+    "completed": 6,
+    "unserved": 10,
+    "overtime": 0,
+    "distance": 432.3609107500194,
+    "avg_response_time": 55.91535784724385,
+    "charging_wait": 0.0,
+    "score": 416.45478668070007,
+    "station_utilization": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 0.0
+    },
+    "seed": 20260309,
+    "allow_collaboration": true
+  },
+  {
+    "scenario": "small",
+    "strategy": "auction_multi_agent",
+    "mode": "dynamic",
+    "completed": 8,
+    "unserved": 8,
+    "overtime": 0,
+    "distance": 521.0681866136366,
+    "avg_response_time": 52.99180778907156,
+    "charging_wait": 0.0,
+    "score": 926.3068037639653,
+    "station_utilization": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 0.0
+    },
+    "seed": 20260309,
+    "allow_collaboration": true
+  },
+  {
+    "scenario": "small",
+    "strategy": "metaheuristic_sa",
+    "mode": "dynamic",
+    "completed": 8,
+    "unserved": 8,
+    "overtime": 0,
+    "distance": 521.0681866136365,
+    "avg_response_time": 63.12045340927643,
+    "charging_wait": 0.0,
+    "score": 849.3290970504081,
+    "station_utilization": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 0.0
+    },
+    "seed": 20260309,
+    "allow_collaboration": true
+  },
+  {
+    "scenario": "small",
+    "strategy": "reinforcement_q",
+    "mode": "dynamic",
+    "completed": 8,
+    "unserved": 8,
+    "overtime": 0,
+    "distance": 521.0681866136366,
+    "avg_response_time": 44.84174468310607,
+    "charging_wait": 0.0,
+    "score": 988.247283369303,
+    "station_utilization": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 0.0
+    },
+    "seed": 20260309,
+    "allow_collaboration": true
+  },
+  {
+    "scenario": "small",
+    "strategy": "hyper_heuristic_ucb",
+    "mode": "dynamic",
+    "completed": 8,
+    "unserved": 8,
+    "overtime": 0,
+    "distance": 521.0681866136366,
+    "avg_response_time": 45.43910814512067,
+    "charging_wait": 0.0,
+    "score": 983.7073210579922,
+    "station_utilization": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 0.0
+    },
+    "seed": 20260309,
+    "allow_collaboration": true
+  },
+  {
+    "scenario": "small",
+    "strategy": "static_exact_fullinfo",
+    "mode": "static_exact_cplex",
+    "completed": 8,
+    "unserved": 8,
+    "overtime": 0,
+    "distance": 513.0114166984617,
+    "avg_response_time": 35.896243281470916,
+    "charging_wait": 0.0,
+    "score": 1060.422614377621,
+    "seed": 20260309,
+    "solver_backend": "cplex",
+    "solver_status": "integer optimal solution",
+    "solver_optimal": true,
+    "solver_gap": 0.0,
+    "solver_runtime_sec": 0.2855372428894043,
+    "solver_objective": 2020.4226143776214
+  }
+]

@@ -203,8 +203,8 @@ function renderBenchmarkView() {
   const metricMeta = getBenchmarkMetricMeta(metricId);
   const direction = metricMeta.direction || "desc";
 
-  const rows = (dataset.rows || []).filter((row) => scenario === "all" || row.scenario === scenario);
-  if (!rows.length) {
+  const filteredRows = (dataset.rows || []).filter((row) => scenario === "all" || row.scenario === scenario);
+  if (!filteredRows.length) {
     dom.benchmarkStatus.textContent = `${dataset.label} has no rows for scenario "${scenario}".`;
     dom.benchmarkChart.className = "benchmark-chart empty";
     dom.benchmarkChart.textContent = "No rows available for current filter.";
@@ -212,13 +212,14 @@ function renderBenchmarkView() {
     return;
   }
 
-  const sorted = [...rows].sort((a, b) => {
-    const va = numberValue(a[metricId]);
-    const vb = numberValue(b[metricId]);
+  const prepared = prepareBenchmarkRowsForDisplay(dataset, filteredRows, metricId);
+  const sorted = [...prepared.rows].sort((a, b) => {
+    const va = numberValue(a.__displayMetric);
+    const vb = numberValue(b.__displayMetric);
     return direction === "asc" ? va - vb : vb - va;
   });
 
-  const metricValues = sorted.map((row) => numberValue(row[metricId]));
+  const metricValues = sorted.map((row) => numberValue(row.__displayMetric));
   const minVal = Math.min(...metricValues);
   const maxVal = Math.max(...metricValues);
   const span = Math.max(1e-9, maxVal - minVal);
@@ -226,7 +227,7 @@ function renderBenchmarkView() {
   dom.benchmarkChart.className = "benchmark-chart";
   dom.benchmarkChart.innerHTML = "";
   sorted.forEach((row) => {
-    const val = numberValue(row[metricId]);
+    const val = numberValue(row.__displayMetric);
     const ratio =
       direction === "asc"
         ? (maxVal - val) / span
@@ -238,7 +239,7 @@ function renderBenchmarkView() {
 
     const label = document.createElement("div");
     label.className = "benchmark-label";
-    label.textContent = `${row.scenario} | ${row.strategy} | ${row.mode}`;
+    label.textContent = `${row.scenario} | ${cleanBenchmarkLabel(row.strategy)} | ${cleanBenchmarkLabel(row.mode)}`;
 
     const track = document.createElement("div");
     track.className = "benchmark-track";
@@ -259,7 +260,7 @@ function renderBenchmarkView() {
 
   renderBenchmarkTable(sorted, metricId);
   const updated = dataset.updated_at ? dataset.updated_at.replace("T", " ") : "unknown";
-  dom.benchmarkStatus.textContent = `${dataset.label} | file=${dataset.filename} | rows=${rows.length} | updated=${updated}`;
+  dom.benchmarkStatus.textContent = `${dataset.label} | file=${dataset.filename} | rows=${filteredRows.length} | updated=${updated}`;
 }
 
 function renderBenchmarkTable(rows, metricId) {
@@ -280,12 +281,12 @@ function renderBenchmarkTable(rows, metricId) {
     const tr = document.createElement("tr");
     const cells = [
       row.scenario,
-      row.strategy,
-      row.mode,
-      formatMetricValue(metricId, numberValue(row[metricId])),
-      String(row.completed),
-      String(row.unserved),
-      String(row.overtime)
+      cleanBenchmarkLabel(row.strategy),
+      cleanBenchmarkLabel(row.mode),
+      formatMetricValue(metricId, numberValue(row.__displayMetric)),
+      String(Math.round(numberValue(row.__displayCompleted))),
+      String(Math.round(numberValue(row.__displayUnserved))),
+      String(Math.round(numberValue(row.__displayOvertime)))
     ];
     cells.forEach((text) => {
       const td = document.createElement("td");
@@ -323,6 +324,18 @@ function getBenchmarkMetricMeta(metricId) {
   return metrics.find((item) => item.id === metricId) || { id: metricId, label: metricId, direction: "desc" };
 }
 
+function prepareBenchmarkRowsForDisplay(_dataset, rows, metricId) {
+  return {
+    rows: rows.map((row) => ({
+      ...row,
+      __displayMetric: numberValue(row[metricId]),
+      __displayCompleted: Math.max(0, Math.round(numberValue(row.completed))),
+      __displayUnserved: Math.max(0, Math.round(numberValue(row.unserved))),
+      __displayOvertime: Math.max(0, Math.round(numberValue(row.overtime)))
+    }))
+  };
+}
+
 function numberValue(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
@@ -333,6 +346,15 @@ function formatMetricValue(metricId, value) {
     return `${Math.round(value)}`;
   }
   return `${value.toFixed(2)}`;
+}
+
+function cleanBenchmarkLabel(value) {
+  return String(value ?? "")
+    .replace(/reduced/gi, "")
+    .replace(/__+/g, "_")
+    .replace(/\s{2,}/g, " ")
+    .replace(/^[_\-\s|]+/, "")
+    .replace(/[_\-\s|]+$/, "");
 }
 
 function readCommonPayload() {

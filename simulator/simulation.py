@@ -1,6 +1,7 @@
 ﻿from __future__ import annotations
 
 import copy
+import math
 import random
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, Sequence, Tuple
@@ -45,10 +46,10 @@ SCENARIO_SCALES: Dict[str, ScenarioScale] = {
         name="small",
         nodes=24,
         extra_edges=34,
-        vehicles=4,
+        vehicles=6,
         stations=3,
-        tasks=16,
-        horizon=260,
+        tasks=14,
+        horizon=360,
         max_task_weight=18.0,
     ),
     "medium": ScenarioScale(
@@ -91,7 +92,12 @@ def build_scenario(scale_name: str, seed: int, allow_collaboration: bool = False
     )
 
     depot_node = 0
-    station_nodes = rnd.sample(range(1, scale.nodes), scale.stations)
+    station_nodes = _select_station_nodes(
+        graph=graph,
+        depot_node=depot_node,
+        station_count=scale.stations,
+        rnd=rnd,
+    )
 
     stations: Dict[int, ChargingStation] = {}
     for station_id, node_id in enumerate(station_nodes):
@@ -121,25 +127,30 @@ def build_scenario(scale_name: str, seed: int, allow_collaboration: bool = False
     caps = sorted((vehicle.capacity for vehicle in vehicles.values()), reverse=True)
     max_single_cap = caps[0]
     max_pair_cap = caps[0] + (caps[1] if len(caps) > 1 else 0.0)
-    task_weight_high = scale.max_task_weight if allow_collaboration else min(scale.max_task_weight, max_single_cap - 0.3)
+    # Keep regular tasks single-vehicle serviceable even when collaboration is enabled.
+    # Collaboration-heavy tasks are injected separately via collab_task_count.
+    task_weight_high = min(scale.max_task_weight, max_single_cap - 0.3)
     collab_task_count = 0
     collab_weight_low = max_single_cap + 0.2
     collab_weight_high = min(scale.max_task_weight, max_pair_cap - 0.2)
     if allow_collaboration and collab_weight_high > collab_weight_low:
-        collab_task_count = max(1, int(scale.tasks * 0.16))
+        collab_ratio = 0.08 if scale.name == "small" else 0.16
+        collab_task_count = max(1, int(scale.tasks * collab_ratio))
 
     # Generate clustered task release times to create realistic dispatch peaks.
     release_bucket = {"small": 4, "medium": 6, "large": 8}[scale.name]
     jitter = max(2, int(scale.horizon * 0.03))
     peak_count = max(3, scale.tasks // 18)
-    peak_centers = [rnd.randint(0, scale.horizon - 1) for _ in range(peak_count)]
+    release_upper = int(scale.horizon * (0.80 if scale.name == "small" else 1.0))
+    release_upper = max(release_bucket, min(scale.horizon - 1, release_upper))
+    peak_centers = [rnd.randint(0, release_upper) for _ in range(peak_count)]
 
     for task_id in range(scale.tasks):
         if rnd.random() < 0.65:
             center = rnd.choice(peak_centers)
             release = center + rnd.randint(-jitter, jitter)
         else:
-            release = rnd.randint(0, scale.horizon - 1)
+            release = rnd.randint(0, release_upper)
         release = max(0, min(scale.horizon - 1, release))
         release = (release // release_bucket) * release_bucket
         node_id = rnd.randint(1, scale.nodes - 1)
@@ -170,9 +181,9 @@ def build_scenario(scale_name: str, seed: int, allow_collaboration: bool = False
         overtime_penalty=70.0,
         unserved_penalty=60.0,
         allow_collaboration=allow_collaboration,
-        min_battery_reserve_ratio=0.30,
-        task_end_target_ratio=0.55,
-        idle_recharge_trigger_ratio=0.55,
+        min_battery_reserve_ratio=0.22 if scale.name == "small" else 0.30,
+        task_end_target_ratio=0.45 if scale.name == "small" else 0.55,
+        idle_recharge_trigger_ratio=0.45 if scale.name == "small" else 0.55,
         idle_recharge_target_ratio=0.90,
         allow_depot_charging=True,
         depot_charge_rate=7.2,
@@ -207,7 +218,10 @@ class FleetSimulator:
         events: List[DispatchEvent] = []
 
         cursor = 0
-        for now in range(self.config.horizon + 1):
+        simulation_end = self._compute_simulation_end_time()
+        last_now = 0
+        for now in range(simulation_end + 1):
+            last_now = now
             while cursor < len(self.tasks) and self.tasks[cursor].release_time <= now:
                 pending.append(self.tasks[cursor])
                 cursor += 1
@@ -337,6 +351,12 @@ class FleetSimulator:
             if idle_vehicle_ids:
                 self._run_idle_recharge(idle_vehicle_ids, now)
 
+            # Stop early once all tasks are released/cleared and all vehicles are idle.
+            if cursor >= len(self.tasks) and not pending:
+                all_idle = all(vehicle.available_time <= now + 1e-9 for vehicle in self.vehicles.values())
+                if all_idle:
+                    break
+
         unserved_tasks = pending + self.tasks[cursor:]
         total_score = sum(item.score for item in completed) - self.config.unserved_penalty * len(unserved_tasks)
         avg_response_time = (
@@ -357,11 +377,20 @@ class FleetSimulator:
             total_charging_wait=sum(item.charging_wait for item in completed),
             final_score=total_score,
             station_utilization={
-                station_id: station.utilization(self.config.horizon)
+                station_id: station.utilization(last_now)
                 for station_id, station in self.stations.items()
             },
         )
         return summary, completed, events
+
+    def _compute_simulation_end_time(self) -> int:
+        if not self.tasks:
+            return int(self.config.horizon)
+        max_release = max(task.release_time for task in self.tasks)
+        max_deadline = max(task.deadline for task in self.tasks)
+        # Keep a post-deadline tail window so late released tasks still have service opportunities.
+        tail_window = max(40, int(0.2 * self.config.horizon))
+        return int(max(self.config.horizon, max_release, max_deadline) + tail_window)
 
     def _plan_vehicle_mission(self, vehicle: Vehicle, task: Task, now: float) -> VehicleMission | None:
         depot = self.config.depot_node
@@ -715,6 +744,51 @@ def _merge_paths(*paths: List[int]) -> List[int]:
             continue
         merged.extend(path[1:])
     return merged
+
+
+def _select_station_nodes(
+    graph: WeightedGraph,
+    depot_node: int,
+    station_count: int,
+    rnd: random.Random,
+) -> List[int]:
+    candidates = [node_id for node_id in graph.nodes if node_id != depot_node]
+    if station_count >= len(candidates):
+        return sorted(candidates)
+
+    depot = graph.nodes[depot_node]
+    dist_to_depot = {
+        node_id: math.hypot(graph.nodes[node_id].x - depot.x, graph.nodes[node_id].y - depot.y)
+        for node_id in candidates
+    }
+
+    first = max(candidates, key=lambda node_id: (dist_to_depot[node_id], rnd.random()))
+    selected = [first]
+    selected_set = {first}
+
+    while len(selected) < station_count:
+        best_node = None
+        best_score = -1.0
+        for node_id in candidates:
+            if node_id in selected_set:
+                continue
+            min_dist_to_selected = min(
+                math.hypot(
+                    graph.nodes[node_id].x - graph.nodes[other_id].x,
+                    graph.nodes[node_id].y - graph.nodes[other_id].y,
+                )
+                for other_id in selected
+            )
+            score = min_dist_to_selected + 0.35 * dist_to_depot[node_id] + rnd.random() * 1e-6
+            if score > best_score:
+                best_score = score
+                best_node = node_id
+        if best_node is None:
+            break
+        selected.append(best_node)
+        selected_set.add(best_node)
+
+    return sorted(selected)
 
 
 def run_strategies_for_scenario(

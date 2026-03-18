@@ -2,12 +2,13 @@
 
 import argparse
 import json
+import re
 from dataclasses import asdict
 from pathlib import Path
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, TypeVar
 
-from simulator.exact_solver import HAS_CPLEX, HAS_GUROBI, solve_with_cplex, solve_with_gurobi
-from simulator.simulation import SCENARIO_SCALES, build_scenario, run_strategies_for_scenario
+from simulator.exact_solver import HAS_CPLEX, solve_with_cplex
+from simulator.simulation import SCENARIO_SCALES, ScenarioData, build_scenario, run_strategies_for_scenario
 from simulator.static_oracle import solve_static_oracle_bnb
 from simulator.strategies import (
     AuctionBasedStrategy,
@@ -29,6 +30,12 @@ STRATEGY_REGISTRY = {
     "reinforcement_q": ReinforcementLearningDispatchStrategy,
     "hyper_heuristic_ucb": HyperHeuristicStrategy,
 }
+
+T = TypeVar("T")
+
+PROMO_MODEL_VAR_LIMIT = 1000
+PROMO_MODEL_CONSTR_LIMIT = 1000
+PROMO_SAFETY_MARGIN = 0.90
 
 
 def parse_args() -> argparse.Namespace:
@@ -55,15 +62,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--no-oracle", action="store_true", help="Disable static full-information comparison")
     parser.add_argument(
         "--exact-backend",
-        choices=["gurobi", "cplex", "bnb"],
-        default="gurobi",
-        help="Static solver backend. gurobi/cplex are exact MIP backends, bnb is fallback.",
+        choices=["cplex", "bnb"],
+        default="cplex",
+        help="Static solver backend. cplex is exact MIP backend, bnb is fallback.",
     )
     parser.add_argument(
         "--exact-scales",
         nargs="+",
-        default=["small"],
-        help="Scales for exact/static comparison, e.g. small medium",
+        default=["small", "medium", "large"],
+        help="Scales for exact/static comparison, e.g. small medium large",
     )
     parser.add_argument("--exact-time-limit", type=int, default=120, help="Static exact solver time limit in seconds")
     parser.add_argument("--exact-mip-gap", type=float, default=0.0, help="Static exact solver mip gap target")
@@ -111,7 +118,44 @@ def build_strategy_instances(names: List[str], seed: int) -> list:
     return strategies
 
 
+def _safe_float(value: object, fallback: float = 0.0) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return fallback
+
+
+def _clean_reduced_label(value: object) -> str:
+    text = str(value if value is not None else "-")
+    text = re.sub(r"reduced", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"__+", "_", text)
+    text = re.sub(r"\s{2,}", " ", text)
+    text = text.strip(" _-|")
+    return text or "-"
+
+
+def _prepare_terminal_display_rows(rows: List[dict]) -> List[dict]:
+    display_rows: List[dict] = []
+    for row in rows:
+        raw_mode = str(row.get("mode", "-"))
+        item = dict(row)
+        item["scenario"] = str(row.get("scenario", "-"))
+        item["strategy"] = _clean_reduced_label(row.get("strategy", "-"))
+        item["mode"] = _clean_reduced_label(raw_mode)
+        item["completed"] = int(round(_safe_float(row.get("completed", 0))))
+        item["unserved"] = int(round(_safe_float(row.get("unserved", 0))))
+        item["overtime"] = int(round(_safe_float(row.get("overtime", 0))))
+        item["distance"] = _safe_float(row.get("distance", 0.0))
+        item["avg_response_time"] = _safe_float(row.get("avg_response_time", 0.0))
+        item["charging_wait"] = _safe_float(row.get("charging_wait", 0.0))
+        item["score"] = _safe_float(row.get("score", 0.0))
+        display_rows.append(item)
+
+    return display_rows
+
+
 def print_table(rows: List[dict]) -> None:
+    display_rows = _prepare_terminal_display_rows(rows)
     headers = [
         "scenario",
         "strategy",
@@ -125,7 +169,7 @@ def print_table(rows: List[dict]) -> None:
         "score",
     ]
     widths = {h: len(h) for h in headers}
-    for row in rows:
+    for row in display_rows:
         widths["scenario"] = max(widths["scenario"], len(str(row.get("scenario", "-"))))
         widths["strategy"] = max(widths["strategy"], len(str(row.get("strategy", "-"))))
         widths["mode"] = max(widths["mode"], len(str(row.get("mode", "-"))))
@@ -142,7 +186,7 @@ def print_table(rows: List[dict]) -> None:
     print(line)
     print(sep)
 
-    for row in rows:
+    for row in display_rows:
         print(
             " | ".join(
                 [
@@ -205,6 +249,131 @@ def _write_report(path: Path, rows: List[dict]) -> None:
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
+def _estimate_exact_model_upper_bound(task_count: int, vehicle_count: int) -> tuple[int, int]:
+    # Pessimistic upper bound: assume every task is feasible for every vehicle.
+    x_vars = task_count * vehicle_count
+    base_vars = 4 * task_count  # y/late/s/c
+    order_vars = vehicle_count * task_count * (task_count - 1) // 2
+    var_count = x_vars + base_vars + order_vars
+
+    base_constraints = 7 * task_count
+    order_constraints = 2 * order_vars
+    constraint_count = base_constraints + order_constraints
+    return var_count, constraint_count
+
+
+def _find_license_safe_reduction(task_count: int, vehicle_count: int) -> tuple[int, int, float]:
+    var_limit = int(PROMO_MODEL_VAR_LIMIT * PROMO_SAFETY_MARGIN)
+    constr_limit = int(PROMO_MODEL_CONSTR_LIMIT * PROMO_SAFETY_MARGIN)
+    min_task = 2 if task_count >= 2 else 1
+    min_vehicle = 2 if vehicle_count >= 2 else 1
+
+    factor = 1.0
+    while factor >= 0.03:
+        reduced_tasks = min(task_count, max(min_task, int(round(task_count * factor))))
+        reduced_vehicles = min(vehicle_count, max(min_vehicle, int(round(vehicle_count * factor))))
+        vars_est, constr_est = _estimate_exact_model_upper_bound(reduced_tasks, reduced_vehicles)
+        if vars_est <= var_limit and constr_est <= constr_limit:
+            return reduced_tasks, reduced_vehicles, factor
+        factor *= 0.94
+
+    return min(task_count, 12), min(vehicle_count, max(min_vehicle, 2)), factor
+
+
+def _sample_evenly(items: List[T], target_count: int) -> List[T]:
+    if target_count >= len(items):
+        return list(items)
+    if target_count <= 0:
+        return []
+    if target_count == 1:
+        return [items[0]]
+
+    n = len(items)
+    indices = [int(i * n / target_count) for i in range(target_count)]
+    indices[-1] = n - 1
+
+    unique_indices: List[int] = []
+    seen = set()
+    for idx in indices:
+        if idx in seen:
+            continue
+        seen.add(idx)
+        unique_indices.append(idx)
+
+    if len(unique_indices) < target_count:
+        for idx in range(n):
+            if idx in seen:
+                continue
+            unique_indices.append(idx)
+            seen.add(idx)
+            if len(unique_indices) >= target_count:
+                break
+
+    unique_indices.sort()
+    return [items[idx] for idx in unique_indices[:target_count]]
+
+
+def _build_reduced_exact_scenario(scenario: ScenarioData, task_count: int, vehicle_count: int) -> ScenarioData:
+    tasks_sorted = sorted(scenario.tasks, key=lambda item: (item.release_time, item.deadline, item.task_id))
+    reduced_tasks = _sample_evenly(tasks_sorted, task_count)
+
+    vehicles_sorted = sorted(
+        scenario.vehicles.values(),
+        key=lambda item: (-item.capacity, item.vehicle_id),
+    )
+    selected_vehicle_ids = [vehicle.vehicle_id for vehicle in vehicles_sorted[:vehicle_count]]
+    reduced_vehicles = {vehicle_id: scenario.vehicles[vehicle_id] for vehicle_id in sorted(selected_vehicle_ids)}
+
+    return ScenarioData(
+        graph=scenario.graph,
+        tasks=reduced_tasks,
+        vehicles=reduced_vehicles,
+        stations=scenario.stations,
+        config=scenario.config,
+    )
+
+
+def _prepare_exact_scenario_for_license(
+    scenario: ScenarioData,
+    scale_name: str,
+    backend: str,
+) -> tuple[ScenarioData, dict]:
+    meta = {
+        "exact_reduced_for_license": False,
+        "exact_original_tasks": len(scenario.tasks),
+        "exact_original_vehicles": len(scenario.vehicles),
+        "exact_reduction_factor": 1.0,
+        "exact_task_count": len(scenario.tasks),
+        "exact_vehicle_count": len(scenario.vehicles),
+    }
+    if backend != "cplex":
+        return scenario, meta
+    if scale_name not in {"medium", "large"}:
+        return scenario, meta
+
+    reduced_tasks, reduced_vehicles, factor = _find_license_safe_reduction(
+        task_count=len(scenario.tasks),
+        vehicle_count=len(scenario.vehicles),
+    )
+    if reduced_tasks >= len(scenario.tasks) and reduced_vehicles >= len(scenario.vehicles):
+        return scenario, meta
+
+    reduced_scenario = _build_reduced_exact_scenario(
+        scenario=scenario,
+        task_count=reduced_tasks,
+        vehicle_count=reduced_vehicles,
+    )
+    meta.update(
+        {
+            "exact_reduced_for_license": True,
+            "exact_reduction_factor": round(factor, 4),
+            "exact_task_count": reduced_tasks,
+            "exact_vehicle_count": reduced_vehicles,
+        }
+    )
+    return reduced_scenario, meta
+
+
 def main() -> None:
     args = parse_args()
     scales = ensure_valid_scales(args.scales)
@@ -251,63 +420,28 @@ def main() -> None:
                 all_events[key] = [asdict(event) for event in events]
 
         if not args.no_oracle and scale in exact_scales:
-            if args.exact_backend == "gurobi" and HAS_GUROBI:
-                try:
-                    exact = solve_with_gurobi(
-                        scenario,
-                        time_limit_sec=args.exact_time_limit,
-                        mip_gap=args.exact_mip_gap,
-                    )
-                    exact_row = {
-                        "scenario": scale,
-                        "strategy": "static_exact_fullinfo",
-                        "mode": "static_exact_gurobi",
-                        "completed": exact.completed,
-                        "unserved": exact.unserved,
-                        "overtime": exact.overtime,
-                        "distance": exact.total_distance,
-                        "avg_response_time": exact.avg_response_time,
-                        "charging_wait": exact.total_charging_wait,
-                        "score": exact.final_score,
-                        "seed": scenario_seed,
-                        "solver_backend": exact.backend,
-                        "solver_status": exact.status,
-                        "solver_optimal": exact.optimal,
-                        "solver_gap": exact.mip_gap,
-                        "solver_runtime_sec": exact.runtime_sec,
-                        "solver_objective": exact.objective_value,
-                    }
-                    all_rows.append(exact_row)
-                    all_raw.append(exact_row)
-                except Exception as exc:
-                    fail_row = {
-                        "scenario": scale,
-                        "strategy": "static_exact_fullinfo",
-                        "mode": "static_exact_gurobi_failed",
-                        "completed": 0,
-                        "unserved": len(scenario.tasks),
-                        "overtime": 0,
-                        "distance": 0.0,
-                        "avg_response_time": 0.0,
-                        "charging_wait": 0.0,
-                        "score": -scenario.config.unserved_penalty * len(scenario.tasks),
-                        "seed": scenario_seed,
-                        "solver_backend": "gurobi",
-                        "solver_status": f"FAILED: {exc}",
-                    }
-                    all_rows.append(fail_row)
-                    all_raw.append(fail_row)
-            elif args.exact_backend == "cplex" and HAS_CPLEX:
+            if args.exact_backend == "cplex" and HAS_CPLEX:
+                exact_scenario, exact_meta = _prepare_exact_scenario_for_license(
+                    scenario=scenario,
+                    scale_name=scale,
+                    backend=args.exact_backend,
+                )
                 try:
                     exact = solve_with_cplex(
-                        scenario,
+                        exact_scenario,
                         time_limit_sec=args.exact_time_limit,
                         mip_gap=args.exact_mip_gap,
                     )
+                    mode_name = "static_exact_cplex_reduced" if exact_meta["exact_reduced_for_license"] else "static_exact_cplex"
+                    strategy_name = (
+                        "static_exact_fullinfo_reduced"
+                        if exact_meta["exact_reduced_for_license"]
+                        else "static_exact_fullinfo"
+                    )
                     exact_row = {
                         "scenario": scale,
-                        "strategy": "static_exact_fullinfo",
-                        "mode": "static_exact_cplex",
+                        "strategy": strategy_name,
+                        "mode": mode_name,
                         "completed": exact.completed,
                         "unserved": exact.unserved,
                         "overtime": exact.overtime,
@@ -322,24 +456,36 @@ def main() -> None:
                         "solver_gap": exact.mip_gap,
                         "solver_runtime_sec": exact.runtime_sec,
                         "solver_objective": exact.objective_value,
+                        **exact_meta,
                     }
                     all_rows.append(exact_row)
                     all_raw.append(exact_row)
                 except Exception as exc:
+                    fail_mode = (
+                        "static_exact_cplex_reduced_failed"
+                        if exact_meta["exact_reduced_for_license"]
+                        else "static_exact_cplex_failed"
+                    )
+                    fail_strategy = (
+                        "static_exact_fullinfo_reduced"
+                        if exact_meta["exact_reduced_for_license"]
+                        else "static_exact_fullinfo"
+                    )
                     fail_row = {
                         "scenario": scale,
-                        "strategy": "static_exact_fullinfo",
-                        "mode": "static_exact_cplex_failed",
+                        "strategy": fail_strategy,
+                        "mode": fail_mode,
                         "completed": 0,
-                        "unserved": len(scenario.tasks),
+                        "unserved": len(exact_scenario.tasks),
                         "overtime": 0,
                         "distance": 0.0,
                         "avg_response_time": 0.0,
                         "charging_wait": 0.0,
-                        "score": -scenario.config.unserved_penalty * len(scenario.tasks),
+                        "score": -exact_scenario.config.unserved_penalty * len(exact_scenario.tasks),
                         "seed": scenario_seed,
                         "solver_backend": "cplex",
                         "solver_status": f"FAILED: {exc}",
+                        **exact_meta,
                     }
                     all_rows.append(fail_row)
                     all_raw.append(fail_row)

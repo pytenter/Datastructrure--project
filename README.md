@@ -11,7 +11,7 @@ optional multi-vehicle collaboration, and dynamic-vs-static comparison.
 - Charging station constraints: waiting queue and station load
 - Web replay dashboard (routes, moving vehicles, charger icons, live panels)
 - Strategy benchmarking on `small`, `medium`, `large` scenarios
-- Optional static full-information baseline (Gurobi / CPLEX / BnB fallback)
+- Optional static full-information baseline (CPLEX / BnB fallback)
 
 ## Strategies
 
@@ -38,9 +38,6 @@ The current code path runs on Python standard library only.
 
 Install these only if you want exact/static optimization backends:
 
-- Gurobi path:
-  - `pip install gurobipy`
-  - Requires a valid Gurobi license
 - CPLEX path:
   - `pip install docplex cplex`
   - Requires local CPLEX runtime/license
@@ -82,17 +79,15 @@ Default URL:
 python main.py --no-oracle --allow-collaboration --output results/summary_dynamic.json
 ```
 
-### Run dynamic vs static (Gurobi)
-
-```bash
-python main.py --allow-collaboration --exact-backend gurobi --exact-scales small --output results/summary_gurobi.json
-```
-
 ### Run dynamic vs static (CPLEX)
 
 ```bash
-python main.py --allow-collaboration --exact-backend cplex --exact-scales small --output results/summary_cplex.json
+python main.py --allow-collaboration --exact-backend cplex --exact-scales small medium large --output results/summary_cplex.json
 ```
+
+Note:
+- For `medium/large`, exact solving is automatically reduced to a license-safe subset when using size-limited CPLEX licenses.
+- Result rows are marked as `static_exact_*_reduced`.
 
 ### Run fallback static backend (BnB, no commercial solver)
 

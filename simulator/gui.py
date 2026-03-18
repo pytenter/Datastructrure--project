@@ -39,7 +39,6 @@ RESULTS_DIR = PROJECT_ROOT / "results"
 
 BENCHMARK_PRESETS: List[Tuple[str, str, str]] = [
     ("dynamic_only", "Dynamic Only", "summary_dynamic.json"),
-    ("gurobi", "Dynamic vs Static (Gurobi)", "summary_gurobi.json"),
     ("cplex", "Dynamic vs Static (CPLEX)", "summary_cplex.json"),
     ("bnb", "Dynamic vs Static (BnB)", "summary_bnb.json"),
 ]
@@ -371,6 +370,8 @@ def _load_benchmark_payload() -> dict:
         name_lower = path.name.lower()
         if name_lower in seen_names:
             continue
+        if "gurobi" in name_lower:
+            continue
         if name_lower.endswith("_check.json") or "smoke" in name_lower:
             continue
         key = path.stem.lower().replace("summary_", "")
@@ -387,7 +388,7 @@ def _load_benchmark_payload() -> dict:
             datasets.append(latest)
 
     default_key = None
-    preferred_keys = ["dynamic_only", "gurobi", "cplex", "bnb", "latest"]
+    preferred_keys = ["dynamic_only", "cplex", "bnb", "latest"]
     for pref in preferred_keys:
         if any(item["key"] == pref for item in datasets):
             default_key = pref
@@ -442,10 +443,15 @@ def _read_benchmark_dataset(key: str, label: str, path: Path) -> dict | None:
 def _normalize_benchmark_row(row: object) -> dict | None:
     if not isinstance(row, dict):
         return None
+    mode = str(row.get("mode", "-"))
+    solver_backend = row.get("solver_backend")
+    solver_backend_name = str(solver_backend).lower() if solver_backend is not None else ""
+    if "gurobi" in mode.lower() or solver_backend_name == "gurobi":
+        return None
     return {
         "scenario": str(row.get("scenario", "-")),
         "strategy": str(row.get("strategy", "-")),
-        "mode": str(row.get("mode", "-")),
+        "mode": mode,
         "completed": _safe_int(row.get("completed", 0)),
         "unserved": _safe_int(row.get("unserved", 0)),
         "overtime": _safe_int(row.get("overtime", 0)),
@@ -454,8 +460,14 @@ def _normalize_benchmark_row(row: object) -> dict | None:
         "charging_wait": _safe_float(row.get("charging_wait", 0.0)),
         "score": _safe_float(row.get("score", 0.0)),
         "seed": _safe_int(row.get("seed", 0)),
-        "solver_backend": row.get("solver_backend"),
+        "solver_backend": solver_backend,
         "solver_status": row.get("solver_status"),
+        "exact_reduced_for_license": bool(row.get("exact_reduced_for_license", False)),
+        "exact_original_tasks": _safe_int(row.get("exact_original_tasks", 0)),
+        "exact_original_vehicles": _safe_int(row.get("exact_original_vehicles", 0)),
+        "exact_task_count": _safe_int(row.get("exact_task_count", 0)),
+        "exact_vehicle_count": _safe_int(row.get("exact_vehicle_count", 0)),
+        "exact_reduction_factor": _safe_float(row.get("exact_reduction_factor", 1.0)),
     }
 
 
