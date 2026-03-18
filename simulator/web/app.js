@@ -34,6 +34,13 @@ const dom = {
   taskListBox: document.getElementById("taskListBox"),
   rankingList: document.getElementById("rankingList"),
   logBox: document.getElementById("logBox"),
+  benchmarkDataset: document.getElementById("benchmarkDataset"),
+  benchmarkScenario: document.getElementById("benchmarkScenario"),
+  benchmarkMetric: document.getElementById("benchmarkMetric"),
+  refreshBenchmarkBtn: document.getElementById("refreshBenchmarkBtn"),
+  benchmarkStatus: document.getElementById("benchmarkStatus"),
+  benchmarkChart: document.getElementById("benchmarkChart"),
+  benchmarkTable: document.getElementById("benchmarkTable"),
   mapSvg: document.getElementById("mapSvg"),
   edgesLayer: document.getElementById("edgesLayer"),
   historyLayer: document.getElementById("historyLayer"),
@@ -62,7 +69,8 @@ const state = {
   recentTaskIds: new Set(),
   completedTaskIds: new Set(),
   lastVehiclePanelPaintAt: 0,
-  activeReplayVehicleIds: new Set()
+  activeReplayVehicleIds: new Set(),
+  benchmarkData: null
 };
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -79,6 +87,13 @@ function bindEvents() {
   dom.pauseBtn.addEventListener("click", pauseReplay);
   dom.stepBtn.addEventListener("click", () => void stepReplay());
   dom.resetBtn.addEventListener("click", resetReplay);
+  dom.refreshBenchmarkBtn.addEventListener("click", () => void loadBenchmarks());
+  dom.benchmarkDataset.addEventListener("change", () => {
+    renderBenchmarkScenarioOptions();
+    renderBenchmarkView();
+  });
+  dom.benchmarkScenario.addEventListener("change", renderBenchmarkView);
+  dom.benchmarkMetric.addEventListener("change", renderBenchmarkView);
 }
 
 async function initialize() {
@@ -90,6 +105,7 @@ async function initialize() {
   dom.seedInput.value = String(meta.defaults.seed);
   dom.collabInput.checked = Boolean(meta.defaults.allow_collaboration);
 
+  await loadBenchmarks();
   setStatus("Status: choose options and run simulation");
 }
 
@@ -102,6 +118,221 @@ function fillSelect(el, values, defaultValue) {
     option.selected = value === defaultValue;
     el.appendChild(option);
   });
+}
+
+async function loadBenchmarks() {
+  dom.benchmarkStatus.textContent = "Loading benchmark files...";
+  try {
+    const payload = await fetchJson("/api/benchmarks");
+    state.benchmarkData = payload;
+    renderBenchmarkControls();
+    renderBenchmarkView();
+  } catch (err) {
+    state.benchmarkData = null;
+    dom.benchmarkStatus.textContent = `Failed to load benchmarks: ${err.message}`;
+    dom.benchmarkChart.className = "benchmark-chart empty";
+    dom.benchmarkChart.textContent = "Benchmark API unavailable.";
+    dom.benchmarkTable.innerHTML = "";
+  }
+}
+
+function renderBenchmarkControls() {
+  const datasets = state.benchmarkData?.datasets || [];
+  const metrics = state.benchmarkData?.metrics || [];
+  const defaults = state.benchmarkData?.defaults || {};
+
+  if (!datasets.length) {
+    dom.benchmarkDataset.innerHTML = "";
+    dom.benchmarkScenario.innerHTML = "";
+    dom.benchmarkMetric.innerHTML = "";
+    dom.benchmarkStatus.textContent = "No benchmark summary file found in results/.";
+    dom.benchmarkChart.className = "benchmark-chart empty";
+    dom.benchmarkChart.textContent = "Run benchmark commands first, then click Refresh Data.";
+    dom.benchmarkTable.innerHTML = "";
+    return;
+  }
+
+  fillSelectByItems(
+    dom.benchmarkDataset,
+    datasets.map((item) => ({
+      value: item.key,
+      label: `${item.label} (${item.row_count})`
+    })),
+    defaults.dataset_key || datasets[0].key
+  );
+
+  fillSelectByItems(
+    dom.benchmarkMetric,
+    metrics.map((item) => ({
+      value: item.id,
+      label: item.label
+    })),
+    defaults.metric || "score"
+  );
+  renderBenchmarkScenarioOptions();
+}
+
+function renderBenchmarkScenarioOptions() {
+  const dataset = getSelectedBenchmarkDataset();
+  if (!dataset) {
+    dom.benchmarkScenario.innerHTML = "";
+    return;
+  }
+
+  const values = Array.from(
+    new Set((dataset.rows || []).map((row) => String(row.scenario || "all")))
+  ).sort((a, b) => a.localeCompare(b));
+
+  const current = dom.benchmarkScenario.value || "all";
+  const options = [{ value: "all", label: "all" }, ...values.map((value) => ({ value, label: value }))];
+  fillSelectByItems(dom.benchmarkScenario, options, options.some((item) => item.value === current) ? current : "all");
+}
+
+function renderBenchmarkView() {
+  const dataset = getSelectedBenchmarkDataset();
+  if (!dataset) {
+    dom.benchmarkStatus.textContent = "No benchmark dataset selected.";
+    dom.benchmarkChart.className = "benchmark-chart empty";
+    dom.benchmarkChart.textContent = "No data.";
+    dom.benchmarkTable.innerHTML = "";
+    return;
+  }
+
+  const scenario = dom.benchmarkScenario.value || "all";
+  const metricId = dom.benchmarkMetric.value || "score";
+  const metricMeta = getBenchmarkMetricMeta(metricId);
+  const direction = metricMeta.direction || "desc";
+
+  const rows = (dataset.rows || []).filter((row) => scenario === "all" || row.scenario === scenario);
+  if (!rows.length) {
+    dom.benchmarkStatus.textContent = `${dataset.label} has no rows for scenario "${scenario}".`;
+    dom.benchmarkChart.className = "benchmark-chart empty";
+    dom.benchmarkChart.textContent = "No rows available for current filter.";
+    dom.benchmarkTable.innerHTML = "";
+    return;
+  }
+
+  const sorted = [...rows].sort((a, b) => {
+    const va = numberValue(a[metricId]);
+    const vb = numberValue(b[metricId]);
+    return direction === "asc" ? va - vb : vb - va;
+  });
+
+  const metricValues = sorted.map((row) => numberValue(row[metricId]));
+  const minVal = Math.min(...metricValues);
+  const maxVal = Math.max(...metricValues);
+  const span = Math.max(1e-9, maxVal - minVal);
+
+  dom.benchmarkChart.className = "benchmark-chart";
+  dom.benchmarkChart.innerHTML = "";
+  sorted.forEach((row) => {
+    const val = numberValue(row[metricId]);
+    const ratio =
+      direction === "asc"
+        ? (maxVal - val) / span
+        : (val - minVal) / span;
+    const width = 15 + ratio * 85;
+
+    const line = document.createElement("div");
+    line.className = "benchmark-row";
+
+    const label = document.createElement("div");
+    label.className = "benchmark-label";
+    label.textContent = `${row.scenario} | ${row.strategy} | ${row.mode}`;
+
+    const track = document.createElement("div");
+    track.className = "benchmark-track";
+    const fill = document.createElement("div");
+    fill.className = `benchmark-fill ${String(row.mode).startsWith("static") ? "static" : "dynamic"}`;
+    fill.style.width = `${width}%`;
+    track.appendChild(fill);
+
+    const value = document.createElement("div");
+    value.className = "benchmark-value";
+    value.textContent = formatMetricValue(metricId, val);
+
+    line.appendChild(label);
+    line.appendChild(track);
+    line.appendChild(value);
+    dom.benchmarkChart.appendChild(line);
+  });
+
+  renderBenchmarkTable(sorted, metricId);
+  const updated = dataset.updated_at ? dataset.updated_at.replace("T", " ") : "unknown";
+  dom.benchmarkStatus.textContent = `${dataset.label} | file=${dataset.filename} | rows=${rows.length} | updated=${updated}`;
+}
+
+function renderBenchmarkTable(rows, metricId) {
+  const table = document.createElement("table");
+  table.className = "benchmark-table";
+
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+  ["Scenario", "Strategy", "Mode", "Metric", "Completed", "Unserved", "Overtime"].forEach((text) => {
+    const th = document.createElement("th");
+    th.textContent = text;
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+
+  const tbody = document.createElement("tbody");
+  rows.slice(0, 20).forEach((row) => {
+    const tr = document.createElement("tr");
+    const cells = [
+      row.scenario,
+      row.strategy,
+      row.mode,
+      formatMetricValue(metricId, numberValue(row[metricId])),
+      String(row.completed),
+      String(row.unserved),
+      String(row.overtime)
+    ];
+    cells.forEach((text) => {
+      const td = document.createElement("td");
+      td.textContent = text;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(thead);
+  table.appendChild(tbody);
+  dom.benchmarkTable.innerHTML = "";
+  dom.benchmarkTable.appendChild(table);
+}
+
+function fillSelectByItems(el, items, defaultValue) {
+  el.innerHTML = "";
+  items.forEach((item) => {
+    const option = document.createElement("option");
+    option.value = item.value;
+    option.textContent = item.label;
+    option.selected = item.value === defaultValue;
+    el.appendChild(option);
+  });
+}
+
+function getSelectedBenchmarkDataset() {
+  const datasets = state.benchmarkData?.datasets || [];
+  const key = dom.benchmarkDataset.value;
+  return datasets.find((item) => item.key === key) || datasets[0] || null;
+}
+
+function getBenchmarkMetricMeta(metricId) {
+  const metrics = state.benchmarkData?.metrics || [];
+  return metrics.find((item) => item.id === metricId) || { id: metricId, label: metricId, direction: "desc" };
+}
+
+function numberValue(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function formatMetricValue(metricId, value) {
+  if (["completed", "unserved", "overtime"].includes(metricId)) {
+    return `${Math.round(value)}`;
+  }
+  return `${value.toFixed(2)}`;
 }
 
 function readCommonPayload() {

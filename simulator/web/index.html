@@ -101,6 +101,28 @@
       </aside>
     </main>
 
+    <section class="card benchmark-panel">
+      <h2>Benchmark Visualization</h2>
+      <div class="benchmark-controls">
+        <label>
+          Dataset
+          <select id="benchmarkDataset"></select>
+        </label>
+        <label>
+          Scenario
+          <select id="benchmarkScenario"></select>
+        </label>
+        <label>
+          Metric
+          <select id="benchmarkMetric"></select>
+        </label>
+        <button id="refreshBenchmarkBtn" class="ghost">Refresh Data</button>
+      </div>
+      <div id="benchmarkStatus" class="benchmark-status">No benchmark file loaded.</div>
+      <div id="benchmarkChart" class="benchmark-chart empty">Run benchmark commands first, then click Refresh Data.</div>
+      <div id="benchmarkTable" class="benchmark-table-wrap"></div>
+    </section>
+
     <footer id="statusBar">Status: Waiting for simulation</footer>
   </div>
 

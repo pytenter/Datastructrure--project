@@ -79,26 +79,37 @@ Default URL:
 ### Run dynamic-only benchmark
 
 ```bash
-python main.py --no-oracle --allow-collaboration
+python main.py --no-oracle --allow-collaboration --output results/summary_dynamic.json
 ```
 
 ### Run dynamic vs static (Gurobi)
 
 ```bash
-python main.py --allow-collaboration --exact-backend gurobi --exact-scales small
+python main.py --allow-collaboration --exact-backend gurobi --exact-scales small --output results/summary_gurobi.json
 ```
 
 ### Run dynamic vs static (CPLEX)
 
 ```bash
-python main.py --allow-collaboration --exact-backend cplex --exact-scales small
+python main.py --allow-collaboration --exact-backend cplex --exact-scales small --output results/summary_cplex.json
 ```
 
 ### Run fallback static backend (BnB, no commercial solver)
 
 ```bash
-python main.py --allow-collaboration --exact-backend bnb --exact-scales small medium large
+python main.py --allow-collaboration --exact-backend bnb --exact-scales small medium large --output results/summary_bnb.json
 ```
+
+### Visualize benchmark outputs in dashboard
+
+1. Run one or more benchmark commands above to generate `results/summary_*.json`.
+2. Launch dashboard:
+
+```bash
+python dashboard.py
+```
+
+3. In the **Benchmark Visualization** panel, click **Refresh Data** and use dataset/scenario/metric filters.
 
 ## 5) Main outputs
 

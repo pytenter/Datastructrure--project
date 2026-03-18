@@ -4,6 +4,7 @@ import copy
 import json
 import webbrowser
 from dataclasses import asdict
+from datetime import datetime
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -33,6 +34,25 @@ STRATEGY_REGISTRY = {
 }
 
 WEB_DIR = Path(__file__).with_name("web")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+RESULTS_DIR = PROJECT_ROOT / "results"
+
+BENCHMARK_PRESETS: List[Tuple[str, str, str]] = [
+    ("dynamic_only", "Dynamic Only", "summary_dynamic.json"),
+    ("gurobi", "Dynamic vs Static (Gurobi)", "summary_gurobi.json"),
+    ("cplex", "Dynamic vs Static (CPLEX)", "summary_cplex.json"),
+    ("bnb", "Dynamic vs Static (BnB)", "summary_bnb.json"),
+]
+
+BENCHMARK_METRICS = [
+    {"id": "score", "label": "Score", "direction": "desc"},
+    {"id": "completed", "label": "Completed", "direction": "desc"},
+    {"id": "unserved", "label": "Unserved", "direction": "asc"},
+    {"id": "overtime", "label": "Overtime", "direction": "asc"},
+    {"id": "distance", "label": "Distance", "direction": "asc"},
+    {"id": "avg_response_time", "label": "Avg Response Time", "direction": "asc"},
+    {"id": "charging_wait", "label": "Charging Wait", "direction": "asc"},
+]
 
 
 class DashboardRequestHandler(BaseHTTPRequestHandler):
@@ -53,6 +73,9 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
                     },
                 }
             )
+            return
+        if path == "/api/benchmarks":
+            self._write_json(_load_benchmark_payload())
             return
 
         if path in {"/", "/index.html"}:
@@ -332,6 +355,129 @@ def _unique_edges(adj_items: Iterable[Tuple[int, List[Tuple[int, float]]]]) -> L
             seen.add(key)
             edges.append(key)
     return edges
+
+
+def _load_benchmark_payload() -> dict:
+    datasets: List[dict] = []
+    seen_names: set[str] = set()
+
+    for key, label, filename in BENCHMARK_PRESETS:
+        dataset = _read_benchmark_dataset(key=key, label=label, path=RESULTS_DIR / filename)
+        if dataset is not None:
+            datasets.append(dataset)
+            seen_names.add(filename.lower())
+
+    for path in sorted(RESULTS_DIR.glob("summary_*.json")):
+        name_lower = path.name.lower()
+        if name_lower in seen_names:
+            continue
+        if name_lower.endswith("_check.json") or "smoke" in name_lower:
+            continue
+        key = path.stem.lower().replace("summary_", "")
+        label = path.stem.replace("summary_", "").replace("_", " ").title()
+        dataset = _read_benchmark_dataset(key=key, label=label, path=path)
+        if dataset is not None:
+            datasets.append(dataset)
+            seen_names.add(name_lower)
+
+    latest_path = RESULTS_DIR / "summary.json"
+    if latest_path.exists() and latest_path.name.lower() not in seen_names:
+        latest = _read_benchmark_dataset(key="latest", label="Latest Summary", path=latest_path)
+        if latest is not None:
+            datasets.append(latest)
+
+    default_key = None
+    preferred_keys = ["dynamic_only", "gurobi", "cplex", "bnb", "latest"]
+    for pref in preferred_keys:
+        if any(item["key"] == pref for item in datasets):
+            default_key = pref
+            break
+    if default_key is None and datasets:
+        default_key = datasets[0]["key"]
+    return {
+        "datasets": datasets,
+        "metrics": BENCHMARK_METRICS,
+        "defaults": {
+            "dataset_key": default_key,
+            "scenario": "all",
+            "metric": "score",
+        },
+    }
+
+
+def _read_benchmark_dataset(key: str, label: str, path: Path) -> dict | None:
+    if not path.exists() or not path.is_file():
+        return None
+
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {
+            "key": key,
+            "label": label,
+            "filename": path.name,
+            "updated_at": _format_mtime(path),
+            "row_count": 0,
+            "rows": [],
+            "error": "Invalid JSON content",
+        }
+
+    rows: List[dict] = []
+    if isinstance(raw, list):
+        for row in raw:
+            normalized = _normalize_benchmark_row(row)
+            if normalized is not None:
+                rows.append(normalized)
+
+    return {
+        "key": key,
+        "label": label,
+        "filename": path.name,
+        "updated_at": _format_mtime(path),
+        "row_count": len(rows),
+        "rows": rows,
+    }
+
+
+def _normalize_benchmark_row(row: object) -> dict | None:
+    if not isinstance(row, dict):
+        return None
+    return {
+        "scenario": str(row.get("scenario", "-")),
+        "strategy": str(row.get("strategy", "-")),
+        "mode": str(row.get("mode", "-")),
+        "completed": _safe_int(row.get("completed", 0)),
+        "unserved": _safe_int(row.get("unserved", 0)),
+        "overtime": _safe_int(row.get("overtime", 0)),
+        "distance": _safe_float(row.get("distance", 0.0)),
+        "avg_response_time": _safe_float(row.get("avg_response_time", 0.0)),
+        "charging_wait": _safe_float(row.get("charging_wait", 0.0)),
+        "score": _safe_float(row.get("score", 0.0)),
+        "seed": _safe_int(row.get("seed", 0)),
+        "solver_backend": row.get("solver_backend"),
+        "solver_status": row.get("solver_status"),
+    }
+
+
+def _safe_float(value: object, fallback: float = 0.0) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return fallback
+
+
+def _safe_int(value: object, fallback: int = 0) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return fallback
+
+
+def _format_mtime(path: Path) -> str:
+    try:
+        return datetime.fromtimestamp(path.stat().st_mtime).isoformat(timespec="seconds")
+    except Exception:
+        return ""
 
 
 def run_dashboard(host: str = "127.0.0.1", port: int = 8765) -> None:
