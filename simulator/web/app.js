@@ -2,7 +2,7 @@
 const MAP_WIDTH = 1000;
 const MAP_HEIGHT = 700;
 const MAP_PADDING = 42;
-const REPLAY_SIM_TIME_TO_MS = 26;
+const REPLAY_SIM_TIME_TO_MS = 78;
 
 const VEHICLE_COLORS = [
   "#1F7EDD",
@@ -71,7 +71,14 @@ const state = {
   completedTaskIds: new Set(),
   lastVehiclePanelPaintAt: 0,
   activeReplayVehicleIds: new Set(),
-  benchmarkData: null
+  benchmarkData: null,
+  initialVehicleState: new Map(),
+  timelineMissions: [],
+  timelineBreakpoints: [],
+  replayEndTime: 0,
+  replayRafId: null,
+  replayLastFrameTs: 0,
+  replayLoggedTaskIds: new Set()
 };
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -374,9 +381,8 @@ async function runSimulation() {
   try {
     const data = await postJson("/api/run", payload);
     hydrateRunData(data);
-    await renderScene(null, false);
-    renderSummary(true);
-    renderStatusPanels();
+    renderStaticMapBase();
+    renderReplayAt(0, { appendLogs: false, initialSummary: true });
     dom.logBox.textContent = "";
     setStatus(`Status: simulation complete, ${state.events.length} dispatch events`);
   } catch (err) {
@@ -385,6 +391,7 @@ async function runSimulation() {
 }
 
 function hydrateRunData(data) {
+  pauseReplay(true);
   state.scenario = data.scenario;
   state.summary = data.summary;
   state.events = Array.isArray(data.events) ? data.events : [];
@@ -400,6 +407,9 @@ function hydrateRunData(data) {
   );
   state.lastVehiclePanelPaintAt = 0;
   state.activeReplayVehicleIds = new Set();
+  state.replayLoggedTaskIds = new Set();
+  state.replayLastFrameTs = 0;
+  state.replayRafId = null;
 
   state.nodeMap = new Map();
   state.scenario.nodes.forEach((node) => state.nodeMap.set(node.node_id, node));
@@ -424,8 +434,10 @@ function hydrateRunData(data) {
       chargeEndTime: null
     });
   });
+  state.initialVehicleState = cloneVehicleStateMap(state.vehicleState);
 
   state.projection = buildProjection(state.scenario.nodes);
+  prepareReplayTimeline();
 }
 
 async function compareStrategies() {
@@ -500,109 +512,108 @@ async function playReplay() {
     setStatus("Status: run simulation first", true);
     return;
   }
-  if (state.playing || state.animating) {
+  if (!state.timelineBreakpoints.length || !Number.isFinite(state.replayEndTime)) {
+    prepareReplayTimeline();
+  }
+  if (!state.timelineBreakpoints.length || state.replayEndTime <= 0) {
+    setStatus("Status: replay timeline unavailable for current run", true);
     return;
+  }
+  if (state.playing) {
+    return;
+  }
+  if (state.currentTime >= state.replayEndTime - 1e-9) {
+    state.currentTime = 0;
+    state.replayLoggedTaskIds = new Set();
+    dom.logBox.textContent = "";
+    renderReplayAt(0, { appendLogs: false, initialSummary: true });
+  }
+  if (state.currentTime <= 1e-9) {
+    const firstDispatch = (state.timelineMissions || [])
+      .map((mission) => numberValue(mission.dispatch))
+      .filter((t) => t > 1e-9)
+      .sort((a, b) => a - b)[0];
+    if (Number.isFinite(firstDispatch)) {
+      renderReplayAt(firstDispatch, { appendLogs: false, initialSummary: false });
+    }
   }
 
   state.playing = true;
+  state.animating = true;
+  state.replayLastFrameTs = 0;
   setStatus("Status: replay in progress...");
 
-  while (state.playing) {
-    let ok = false;
-    try {
-      ok = await stepReplay();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setStatus(`Status: replay error - ${msg}`, true);
-      state.playing = false;
-      break;
+  const tick = (ts) => {
+    if (!state.playing) {
+      state.animating = false;
+      state.replayRafId = null;
+      return;
     }
+    if (!state.replayLastFrameTs) {
+      state.replayLastFrameTs = ts;
+    }
+    const deltaMs = Math.max(0, ts - state.replayLastFrameTs);
+    state.replayLastFrameTs = ts;
+    const nextSimTime = state.currentTime + deltaMs / Math.max(1e-6, REPLAY_SIM_TIME_TO_MS);
+    renderReplayAt(nextSimTime, { appendLogs: true, initialSummary: false });
 
-    if (!ok) {
-      // If animation is still running or event queue has remaining items,
-      // do not stop replay due to a transient state.
-      if (state.animating || state.eventIndex < state.events.length) {
-        await sleep(80);
-        continue;
-      }
+    if (state.currentTime >= state.replayEndTime - 1e-9) {
       state.playing = false;
-      if (state.eventIndex >= state.events.length) {
-        setStatus("Status: replay finished");
-      }
-      break;
+      state.animating = false;
+      state.replayRafId = null;
+      finalizeReplayTaskStates();
+      renderSummary(false);
+      renderStatusPanels();
+      const doneCount = Array.from(state.taskState.values()).filter((s) => s === "done").length;
+      setStatus(`Status: replay finished, done ${doneCount}/${state.scenario.tasks.length}`);
+      return;
     }
-    await sleep(220);
-  }
+    state.replayRafId = requestAnimationFrame(tick);
+  };
+  state.replayRafId = requestAnimationFrame(tick);
 }
 
-function pauseReplay() {
+function pauseReplay(silent = false) {
+  if (state.replayRafId !== null) {
+    cancelAnimationFrame(state.replayRafId);
+    state.replayRafId = null;
+  }
+  state.replayLastFrameTs = 0;
   state.playing = false;
-  setStatus("Status: replay paused");
+  state.animating = false;
+  if (!silent) {
+    setStatus("Status: replay paused");
+  }
 }
 
 async function stepReplay() {
-  if (!state.scenario || state.animating) {
+  if (!state.scenario || !state.events.length) {
     return false;
   }
-  if (state.eventIndex >= state.events.length) {
-    return false;
-  }
-
-  const event = state.events[state.eventIndex];
-  state.eventIndex += 1;
-
-  const routes = [];
-  state.currentTime = Math.max(state.currentTime, Number(event.dispatch_time));
-  state.recentTaskIds = new Set([event.task_id]);
-  state.taskState.set(event.task_id, "delivering");
-
-  const eventRoutes = Array.isArray(event.routes) ? event.routes : [];
-  // Keep status panel aligned with actual animation on map:
-  // vehicle ids are marked active only when their animation starts.
-  state.activeReplayVehicleIds = new Set();
-  eventRoutes.forEach((route) => {
-    routes.push(route);
-    state.routeHistory.push({
-      vehicle_id: route.vehicle_id,
-      route_nodes: route.route_nodes
-    });
-
-    const vehicleId = Number(route.vehicle_id);
-    const vehicle = state.vehicleState.get(vehicleId);
-    if (vehicle) {
-      vehicle.busyUntil = Math.max(vehicle.busyUntil, Number(route.completion_time ?? state.currentTime));
-      vehicle.assignedWeight = Number(route.assigned_weight ?? 0);
-      vehicle.lastTaskId = Number(route.task_id ?? event.task_id);
-      vehicle.chargeAmount = Number(route.charge_amount ?? 0);
-      vehicle.chargeStartTime = route.charge_start_time == null ? null : Number(route.charge_start_time);
-      vehicle.chargeEndTime = route.charge_end_time == null ? null : Number(route.charge_end_time);
+  pauseReplay(true);
+  const nextTime = findNextReplayBreakpoint(state.currentTime);
+  if (nextTime === null) {
+    if (state.currentTime < state.replayEndTime - 1e-9) {
+      renderReplayAt(state.replayEndTime, { appendLogs: true, initialSummary: false });
+      finalizeReplayTaskStates();
+      renderSummary(false);
+      renderStatusPanels();
+      const doneCount = Array.from(state.taskState.values()).filter((s) => s === "done").length;
+      setStatus(`Status: replay finished, done ${doneCount}/${state.scenario.tasks.length}`);
+      return true;
     }
-  });
-
-  if (state.routeHistory.length > 160) {
-    state.routeHistory = state.routeHistory.slice(-160);
+    return false;
   }
-
-  renderStatusPanels();
-  await renderScene({ routes, dispatch_time: Number(event.dispatch_time) }, true);
-
-  state.taskState.set(event.task_id, "done");
-  dom.tasksLayer.innerHTML = "";
-  drawTasks();
-  state.scoreAcc += Number(event.score || 0);
-  appendLog(event);
-  state.activeReplayVehicleIds = new Set();
-  renderSummary(false);
-  renderStatusPanels();
-
-  if (state.eventIndex >= state.events.length) {
-    state.playing = false;
+  renderReplayAt(nextTime, { appendLogs: true, initialSummary: false });
+  if (state.currentTime >= state.replayEndTime - 1e-9) {
     finalizeReplayTaskStates();
+    renderSummary(false);
     renderStatusPanels();
     const doneCount = Array.from(state.taskState.values()).filter((s) => s === "done").length;
     setStatus(`Status: replay finished, done ${doneCount}/${state.scenario.tasks.length}`);
+  } else {
+    setStatus(`Status: replay time ${state.currentTime.toFixed(1)}`);
   }
-
   return true;
 }
 
@@ -611,8 +622,7 @@ function resetReplay() {
     return;
   }
 
-  state.playing = false;
-  state.animating = false;
+  pauseReplay();
   state.eventIndex = 0;
   state.scoreAcc = 0;
   state.routeHistory = [];
@@ -620,28 +630,292 @@ function resetReplay() {
   state.recentTaskIds = new Set();
   state.lastVehiclePanelPaintAt = 0;
   state.activeReplayVehicleIds = new Set();
+  state.replayLoggedTaskIds = new Set();
   state.scenario.tasks.forEach((task) => state.taskState.set(task.task_id, "pending"));
-  (state.scenario.vehicles || []).forEach((vehicle) => {
-    const item = state.vehicleState.get(vehicle.vehicle_id);
-    if (!item) {
-      return;
-    }
-    item.battery = Number(vehicle.battery);
-    item.status = "idle";
-    item.busyUntil = 0;
-    item.currentNode = Number(vehicle.current_node);
-    item.assignedWeight = 0;
-    item.lastTaskId = null;
-    item.chargeAmount = 0;
-    item.chargeStartTime = null;
-    item.chargeEndTime = null;
-  });
+  restoreVehicleStateToInitial();
 
   dom.logBox.textContent = "";
-  void renderScene(null, false);
-  renderSummary(true);
-  renderStatusPanels();
+  renderStaticMapBase();
+  renderReplayAt(0, { appendLogs: false, initialSummary: true });
   setStatus("Status: replay reset");
+}
+
+function cloneVehicleStateMap(sourceMap) {
+  const out = new Map();
+  sourceMap.forEach((value, key) => {
+    out.set(key, { ...value });
+  });
+  return out;
+}
+
+function restoreVehicleStateToInitial() {
+  state.vehicleState = cloneVehicleStateMap(state.initialVehicleState);
+}
+
+function renderStaticMapBase() {
+  if (!state.scenario || !state.projection) {
+    clearMapLayers();
+    return;
+  }
+  clearMapLayers();
+  drawEdges();
+  drawStations();
+  drawDepot();
+}
+
+function prepareReplayTimeline() {
+  if (!state.scenario) {
+    state.timelineMissions = [];
+    state.timelineBreakpoints = [];
+    state.replayEndTime = 0;
+    return;
+  }
+
+  const normalizedEvents = (state.events || [])
+    .map((event) => ({
+      ...event,
+      dispatch_time: numberValue(event.dispatch_time ?? 0),
+      completion_time: numberValue(event.completion_time ?? event.dispatch_time ?? 0),
+      task_id: Number(event.task_id)
+    }))
+    .sort((a, b) => {
+      const da = Number(a.dispatch_time ?? 0);
+      const db = Number(b.dispatch_time ?? 0);
+      if (Math.abs(da - db) > 1e-9) {
+        return da - db;
+      }
+      const ca = Number(a.completion_time ?? da);
+      const cb = Number(b.completion_time ?? db);
+      if (Math.abs(ca - cb) > 1e-9) {
+        return ca - cb;
+      }
+      return Number(a.task_id ?? 0) - Number(b.task_id ?? 0);
+    });
+  state.events = normalizedEvents;
+
+  const breakpoints = [0];
+  const missions = [];
+  normalizedEvents.forEach((event) => {
+    const dispatch = numberValue(event.dispatch_time ?? 0);
+    let completion = numberValue(event.completion_time ?? dispatch + 1e-6);
+    if (!Number.isFinite(completion) || completion < dispatch + 1e-6) {
+      completion = dispatch + 1e-6;
+    }
+    breakpoints.push(dispatch, completion);
+
+    const routes = Array.isArray(event.routes) ? event.routes : [];
+    routes.forEach((route) => {
+      const routeNodes = Array.isArray(route.route_nodes) ? route.route_nodes.map((nodeId) => Number(nodeId)) : [];
+      const points = routeToPoints(routeNodes);
+      if (!points.length) {
+        return;
+      }
+      const metrics = pathMetrics(points);
+      const vehicleId = Number(route.vehicle_id);
+      const taskId = Number(route.task_id ?? event.task_id);
+      const initialVehicle = state.initialVehicleState.get(vehicleId);
+      const routeStartBattery = Number(route.start_battery);
+      const startBattery =
+        Number.isFinite(routeStartBattery)
+          ? routeStartBattery
+          : initialVehicle
+          ? Number(initialVehicle.battery)
+          : Number(route.final_battery ?? 0);
+      const finalBattery = numberValue(route.final_battery ?? startBattery);
+      const chargeAmount = numberValue(route.charge_amount ?? 0);
+      const chargeStartTime = route.charge_start_time == null ? null : Number(route.charge_start_time);
+      const chargeEndTime = route.charge_end_time == null ? null : Number(route.charge_end_time);
+      const preChargeRatio = estimatePreChargeDistanceRatio(
+        {
+          ...route,
+          route_nodes: routeNodes
+        },
+        points,
+        metrics.total
+      );
+      const batteryAtTime = buildBatteryInterpolator(
+        startBattery,
+        finalBattery,
+        chargeAmount,
+        dispatch,
+        completion,
+        chargeStartTime,
+        chargeEndTime,
+        preChargeRatio
+      );
+
+      missions.push({
+        vehicleId,
+        taskId,
+        dispatch,
+        completion,
+        routeNodes,
+        points,
+        cumulative: metrics.cumulative,
+        totalDistancePx: metrics.total,
+        batteryAtTime,
+        finalBattery,
+        finalNode: Number(route.final_node ?? state.scenario.depot_node),
+        assignedWeight: Number(route.assigned_weight ?? 0),
+        chargeAmount,
+        chargeStartTime,
+        chargeEndTime
+      });
+    });
+  });
+
+  missions.sort((a, b) => {
+    if (Math.abs(a.dispatch - b.dispatch) > 1e-9) {
+      return a.dispatch - b.dispatch;
+    }
+    if (Math.abs(a.completion - b.completion) > 1e-9) {
+      return a.completion - b.completion;
+    }
+    return a.vehicleId - b.vehicleId;
+  });
+
+  state.timelineMissions = missions;
+  state.timelineBreakpoints = Array.from(
+    new Set(
+      breakpoints
+        .filter((item) => Number.isFinite(item))
+        .map((item) => Number(item.toFixed(3)))
+    )
+  ).sort((a, b) => a - b);
+  state.replayEndTime = state.timelineBreakpoints.length ? state.timelineBreakpoints[state.timelineBreakpoints.length - 1] : 0;
+}
+
+function findNextReplayBreakpoint(now) {
+  const cur = Number(now ?? 0);
+  for (const t of state.timelineBreakpoints) {
+    if (t > cur + 1e-9) {
+      return t;
+    }
+  }
+  return null;
+}
+
+function renderReplayAt(simTime, options = {}) {
+  if (!state.scenario) {
+    return;
+  }
+  const appendLogs = Boolean(options.appendLogs);
+  const initialSummary = Boolean(options.initialSummary);
+  const replayEnd = Number.isFinite(state.replayEndTime) ? state.replayEndTime : 0;
+  const target = clamp(numberValue(simTime ?? 0), 0, Math.max(0, replayEnd));
+  state.currentTime = target;
+
+  const dispatchedEvents = state.events.filter((event) => Number(event.dispatch_time) <= target + 1e-9);
+  const completedEvents = state.events.filter((event) => Number(event.completion_time) <= target + 1e-9);
+  const activeEvents = state.events.filter(
+    (event) => Number(event.dispatch_time) <= target + 1e-9 && Number(event.completion_time) > target + 1e-9
+  );
+  const dispatchedRoutes = [];
+  dispatchedEvents.forEach((event) => {
+    const routes = Array.isArray(event.routes) ? event.routes : [];
+    routes.forEach((route) => {
+      dispatchedRoutes.push({
+        vehicle_id: Number(route.vehicle_id),
+        route_nodes: Array.isArray(route.route_nodes) ? route.route_nodes : []
+      });
+    });
+  });
+  state.routeHistory = dispatchedRoutes.slice(-160);
+
+  const activeMissions = state.timelineMissions.filter(
+    (mission) => mission.dispatch <= target + 1e-9 && mission.completion > target + 1e-9
+  );
+  const finishedMissions = state.timelineMissions.filter((mission) => mission.completion <= target + 1e-9);
+
+  state.scenario.tasks.forEach((task) => state.taskState.set(task.task_id, "pending"));
+  activeEvents.forEach((event) => state.taskState.set(Number(event.task_id), "delivering"));
+  completedEvents.forEach((event) => state.taskState.set(Number(event.task_id), "done"));
+  if (target >= replayEnd - 1e-9) {
+    finalizeReplayTaskStates();
+  }
+
+  state.recentTaskIds = new Set(activeEvents.map((event) => Number(event.task_id)));
+  state.eventIndex = completedEvents.length;
+  state.scoreAcc = completedEvents.reduce((acc, item) => acc + Number(item.score || 0), 0);
+
+  restoreVehicleStateToInitial();
+  state.activeReplayVehicleIds = new Set();
+
+  finishedMissions.forEach((mission) => {
+    const vehicle = state.vehicleState.get(mission.vehicleId);
+    if (!vehicle) {
+      return;
+    }
+    vehicle.battery = mission.finalBattery;
+    vehicle.currentNode = mission.finalNode;
+    vehicle.lastTaskId = mission.taskId;
+    vehicle.assignedWeight = 0;
+    vehicle.busyUntil = Math.max(Number(vehicle.busyUntil ?? 0), mission.completion);
+    vehicle.chargeAmount = 0;
+    vehicle.chargeStartTime = null;
+    vehicle.chargeEndTime = null;
+  });
+
+  const cars = [];
+  activeMissions.forEach((mission) => {
+    const vehicle = state.vehicleState.get(mission.vehicleId);
+    const progress = clamp(
+      (target - mission.dispatch) / Math.max(1e-6, mission.completion - mission.dispatch),
+      0,
+      1
+    );
+    const dist = mission.totalDistancePx * progress;
+    const point = sampleAtDistance(mission.points, mission.cumulative, dist);
+    cars.push({ vehicleId: mission.vehicleId, point });
+
+    if (vehicle) {
+      vehicle.battery = mission.batteryAtTime(target);
+      vehicle.lastTaskId = mission.taskId;
+      vehicle.assignedWeight = mission.assignedWeight;
+      vehicle.busyUntil = Math.max(Number(vehicle.busyUntil ?? 0), mission.completion);
+      vehicle.chargeAmount = mission.chargeAmount;
+      vehicle.chargeStartTime = mission.chargeStartTime;
+      vehicle.chargeEndTime = mission.chargeEndTime;
+    }
+    state.activeReplayVehicleIds.add(mission.vehicleId);
+  });
+
+  renderReplayLayers(
+    activeMissions.map((mission) => ({
+      vehicle_id: mission.vehicleId,
+      route_nodes: mission.routeNodes
+    })),
+    cars
+  );
+
+  if (appendLogs) {
+    completedEvents.forEach((event) => {
+      const taskId = Number(event.task_id);
+      if (state.replayLoggedTaskIds.has(taskId)) {
+        return;
+      }
+      state.replayLoggedTaskIds.add(taskId);
+      appendLog(event);
+    });
+  }
+
+  renderSummary(initialSummary);
+  renderStatusPanels();
+}
+
+function renderReplayLayers(activeRoutes, cars) {
+  dom.historyLayer.innerHTML = "";
+  dom.tasksLayer.innerHTML = "";
+  dom.activeRouteLayer.innerHTML = "";
+  dom.carLayer.innerHTML = "";
+  drawRouteHistory();
+  drawTasks();
+  drawActiveRoutes(activeRoutes);
+  cars.forEach((carInfo) => {
+    const car = createCar(carInfo.vehicleId);
+    placeCar(car, carInfo.point);
+    dom.carLayer.appendChild(car);
+  });
 }
 
 async function renderScene(activeEvent, animateCars) {
@@ -1102,6 +1376,15 @@ function renderSummary(initial) {
 
   const doneCount = Array.from(state.taskState.values()).filter((s) => s === "done").length;
   const completionRate = state.summary.total_tasks > 0 ? (doneCount / state.summary.total_tasks) * 100 : 0;
+  const completedEvents = state.events.filter((event) => numberValue(event.completion_time) <= state.currentTime + 1e-9);
+  const activeEvents = state.events.filter(
+    (event) =>
+      numberValue(event.dispatch_time) <= state.currentTime + 1e-9 &&
+      numberValue(event.completion_time) > state.currentTime + 1e-9
+  );
+  const multiTotal = state.events.filter((event) => (event.vehicle_ids || []).length > 1).length;
+  const multiCompleted = completedEvents.filter((event) => (event.vehicle_ids || []).length > 1).length;
+  const multiActive = activeEvents.filter((event) => (event.vehicle_ids || []).length > 1).length;
   const vehicles = Array.from(state.vehicleState.values());
   let activeVehicles = 0;
   vehicles.forEach((vehicle) => {
@@ -1120,6 +1403,7 @@ function renderSummary(initial) {
     `Vehicle utilization: ${utilization.toFixed(1)}%`,
     `Total tasks: ${state.summary.total_tasks}`,
     `Completed in replay: ${doneCount}`,
+    `Multi-vehicle tasks (replay): ${multiCompleted}/${multiTotal} | active now ${multiActive}`,
     `Unserved: ${state.summary.unserved_tasks}`,
     `Overtime: ${state.summary.overtime_tasks}`,
     `Final score (simulation): ${Number(state.summary.final_score).toFixed(2)}`,
