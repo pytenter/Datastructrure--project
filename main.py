@@ -338,14 +338,7 @@ def _prepare_exact_scenario_for_license(
     scale_name: str,
     backend: str,
 ) -> tuple[ScenarioData, dict]:
-    meta = {
-        "exact_reduced_for_license": False,
-        "exact_original_tasks": len(scenario.tasks),
-        "exact_original_vehicles": len(scenario.vehicles),
-        "exact_reduction_factor": 1.0,
-        "exact_task_count": len(scenario.tasks),
-        "exact_vehicle_count": len(scenario.vehicles),
-    }
+    meta = _build_exact_meta(scenario)
     if backend != "cplex":
         return scenario, meta
     if scale_name not in {"medium", "large"}:
@@ -372,6 +365,33 @@ def _prepare_exact_scenario_for_license(
         }
     )
     return reduced_scenario, meta
+
+
+def _build_exact_meta(scenario: ScenarioData) -> dict:
+    return {
+        "exact_reduced_for_license": False,
+        "exact_original_tasks": len(scenario.tasks),
+        "exact_original_vehicles": len(scenario.vehicles),
+        "exact_reduction_factor": 1.0,
+        "exact_task_count": len(scenario.tasks),
+        "exact_vehicle_count": len(scenario.vehicles),
+    }
+
+
+def _is_cplex_license_limit_error(exc: Exception) -> bool:
+    text = str(exc).lower()
+    keywords = [
+        "size limit",
+        "problem size",
+        "too many variables",
+        "too many constraints",
+        "community edition",
+        "promotional",
+        "license",
+        "cplex error 1016",
+        "error 1016",
+    ]
+    return any(keyword in text for keyword in keywords)
 
 
 def main() -> None:
@@ -421,17 +441,42 @@ def main() -> None:
 
         if not args.no_oracle and scale in exact_scales:
             if args.exact_backend == "cplex" and HAS_CPLEX:
-                exact_scenario, exact_meta = _prepare_exact_scenario_for_license(
-                    scenario=scenario,
-                    scale_name=scale,
-                    backend=args.exact_backend,
-                )
+                exact_scenario = scenario
+                exact_meta = _build_exact_meta(scenario)
+                exact = None
+                fail_exc = None
                 try:
                     exact = solve_with_cplex(
                         exact_scenario,
                         time_limit_sec=args.exact_time_limit,
                         mip_gap=args.exact_mip_gap,
                     )
+                except Exception as exc:
+                    fail_exc = exc
+                    should_retry_reduced = (
+                        scale in {"medium", "large"}
+                        and _is_cplex_license_limit_error(exc)
+                    )
+                    if should_retry_reduced:
+                        retry_scenario, retry_meta = _prepare_exact_scenario_for_license(
+                            scenario=scenario,
+                            scale_name=scale,
+                            backend=args.exact_backend,
+                        )
+                        if retry_meta["exact_reduced_for_license"]:
+                            exact_scenario = retry_scenario
+                            exact_meta = retry_meta
+                            try:
+                                exact = solve_with_cplex(
+                                    exact_scenario,
+                                    time_limit_sec=args.exact_time_limit,
+                                    mip_gap=args.exact_mip_gap,
+                                )
+                                fail_exc = None
+                            except Exception as retry_exc:
+                                fail_exc = retry_exc
+
+                if exact is not None and fail_exc is None:
                     mode_name = "static_exact_cplex_reduced" if exact_meta["exact_reduced_for_license"] else "static_exact_cplex"
                     strategy_name = (
                         "static_exact_fullinfo_reduced"
@@ -460,7 +505,7 @@ def main() -> None:
                     }
                     all_rows.append(exact_row)
                     all_raw.append(exact_row)
-                except Exception as exc:
+                else:
                     fail_mode = (
                         "static_exact_cplex_reduced_failed"
                         if exact_meta["exact_reduced_for_license"]
@@ -484,7 +529,7 @@ def main() -> None:
                         "score": -exact_scenario.config.unserved_penalty * len(exact_scenario.tasks),
                         "seed": scenario_seed,
                         "solver_backend": "cplex",
-                        "solver_status": f"FAILED: {exc}",
+                        "solver_status": f"FAILED: {fail_exc}",
                         **exact_meta,
                     }
                     all_rows.append(fail_row)

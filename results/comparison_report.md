@@ -12,6 +12,15 @@
 | 6 | hyper_heuristic_ucb | 35854.60 | 220 | 8 | 0 |
 | 7 | nearest_task_first | 35736.95 | 220 | 8 | 0 |
 
+### 静态全信息求解
+- 求解模式: `static_exact_cplex`
+- 后端: `cplex`
+- 状态: `time limit exceeded`
+- 是否证明最优: `False`
+- MIP Gap: `2.468633`
+- 求解耗时: `1375.08s`
+- 与最佳动态策略分差(静态-动态): `231.98`
+
 ## 场景: medium
 ### 动态策略排名
 | 排名 | 策略 | 分数 | 完成 | 超时 | 未完成 |

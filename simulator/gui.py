@@ -38,9 +38,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RESULTS_DIR = PROJECT_ROOT / "results"
 
 BENCHMARK_PRESETS: List[Tuple[str, str, str]] = [
-    ("dynamic_only", "Dynamic Only", "summary_dynamic.json"),
     ("cplex", "Dynamic vs Static (CPLEX)", "summary_cplex.json"),
-    ("bnb", "Dynamic vs Static (BnB)", "summary_bnb.json"),
+    ("dynamic_only", "Dynamic Only", "summary_dynamic.json"),
 ]
 
 BENCHMARK_METRICS = [
@@ -366,29 +365,14 @@ def _load_benchmark_payload() -> dict:
             datasets.append(dataset)
             seen_names.add(filename.lower())
 
-    for path in sorted(RESULTS_DIR.glob("summary_*.json")):
-        name_lower = path.name.lower()
-        if name_lower in seen_names:
-            continue
-        if "gurobi" in name_lower:
-            continue
-        if name_lower.endswith("_check.json") or "smoke" in name_lower:
-            continue
-        key = path.stem.lower().replace("summary_", "")
-        label = path.stem.replace("summary_", "").replace("_", " ").title()
-        dataset = _read_benchmark_dataset(key=key, label=label, path=path)
-        if dataset is not None:
-            datasets.append(dataset)
-            seen_names.add(name_lower)
-
     latest_path = RESULTS_DIR / "summary.json"
-    if latest_path.exists() and latest_path.name.lower() not in seen_names:
+    if not datasets and latest_path.exists() and latest_path.name.lower() not in seen_names:
         latest = _read_benchmark_dataset(key="latest", label="Latest Summary", path=latest_path)
         if latest is not None:
             datasets.append(latest)
 
     default_key = None
-    preferred_keys = ["dynamic_only", "cplex", "bnb", "latest"]
+    preferred_keys = ["cplex", "dynamic_only", "latest"]
     for pref in preferred_keys:
         if any(item["key"] == pref for item in datasets):
             default_key = pref
