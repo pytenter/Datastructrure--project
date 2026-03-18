@@ -11,7 +11,7 @@ optional multi-vehicle collaboration, and dynamic-vs-static comparison.
 - Charging station constraints: waiting queue and station load
 - Web replay dashboard (routes, moving vehicles, charger icons, live panels)
 - Strategy benchmarking on `small`, `medium`, `large` scenarios
-- Optional static full-information baseline (CPLEX / BnB fallback)
+- Optional static full-information baseline (CPLEX)
 
 ## Strategies
 
@@ -89,12 +89,6 @@ Note:
 - For `medium/large`, exact solving is automatically reduced to a license-safe subset when using size-limited CPLEX licenses.
 - Result rows are marked as `static_exact_*_reduced`.
 
-### Run fallback static backend (BnB, no commercial solver)
-
-```bash
-python main.py --allow-collaboration --exact-backend bnb --exact-scales small medium large --output results/summary_bnb.json
-```
-
 ### Visualize benchmark outputs in dashboard
 
 1. Run one or more benchmark commands above to generate `results/summary_*.json`.
@@ -116,4 +110,4 @@ python dashboard.py
 
 - Keep the same Python major/minor version across teammates.
 - Use a fixed `--seed` for reproducible strategy ranking.
-- If one machine has no solver license, use `--exact-backend bnb` to keep workflows aligned.
+- If one machine has no CPLEX runtime/license, static exact rows will be marked as failed and dynamic rows are still generated.

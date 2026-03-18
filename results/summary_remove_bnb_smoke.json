@@ -1,0 +1,160 @@
+[
+  {
+    "scenario": "small",
+    "strategy": "nearest_task_first",
+    "mode": "dynamic",
+    "completed": 14,
+    "unserved": 0,
+    "overtime": 1,
+    "distance": 1514.980991636136,
+    "avg_response_time": 69.53335065603986,
+    "charging_wait": 19.76597124127619,
+    "score": 1852.4748278135603,
+    "station_utilization": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 0.0
+    },
+    "seed": 20260309,
+    "allow_collaboration": true
+  },
+  {
+    "scenario": "small",
+    "strategy": "max_task_first",
+    "mode": "dynamic",
+    "completed": 14,
+    "unserved": 0,
+    "overtime": 1,
+    "distance": 1582.946634717237,
+    "avg_response_time": 68.5262773644413,
+    "charging_wait": 0.0,
+    "score": 1835.4682609999672,
+    "station_utilization": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 0.0
+    },
+    "seed": 20260309,
+    "allow_collaboration": true
+  },
+  {
+    "scenario": "small",
+    "strategy": "urgency_distance",
+    "mode": "dynamic",
+    "completed": 14,
+    "unserved": 0,
+    "overtime": 1,
+    "distance": 1582.946634717237,
+    "avg_response_time": 68.5262773644413,
+    "charging_wait": 0.0,
+    "score": 1835.4682609999672,
+    "station_utilization": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 0.0
+    },
+    "seed": 20260309,
+    "allow_collaboration": true
+  },
+  {
+    "scenario": "small",
+    "strategy": "auction_multi_agent",
+    "mode": "dynamic",
+    "completed": 14,
+    "unserved": 0,
+    "overtime": 1,
+    "distance": 1582.946634717237,
+    "avg_response_time": 68.5262773644413,
+    "charging_wait": 0.0,
+    "score": 1835.4682609999672,
+    "station_utilization": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 0.0
+    },
+    "seed": 20260309,
+    "allow_collaboration": true
+  },
+  {
+    "scenario": "small",
+    "strategy": "metaheuristic_sa",
+    "mode": "dynamic",
+    "completed": 14,
+    "unserved": 0,
+    "overtime": 1,
+    "distance": 1554.643093736862,
+    "avg_response_time": 67.9337759421635,
+    "charging_wait": 0.0,
+    "score": 1858.0663712260566,
+    "station_utilization": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 0.0
+    },
+    "seed": 20260309,
+    "allow_collaboration": true
+  },
+  {
+    "scenario": "small",
+    "strategy": "reinforcement_q",
+    "mode": "dynamic",
+    "completed": 14,
+    "unserved": 0,
+    "overtime": 1,
+    "distance": 1518.6681360948573,
+    "avg_response_time": 69.84243803234136,
+    "charging_wait": 0.0,
+    "score": 1851.3881434005339,
+    "station_utilization": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 0.0
+    },
+    "seed": 20260309,
+    "allow_collaboration": true
+  },
+  {
+    "scenario": "small",
+    "strategy": "hyper_heuristic_ucb",
+    "mode": "dynamic",
+    "completed": 14,
+    "unserved": 0,
+    "overtime": 1,
+    "distance": 1523.2155297278537,
+    "avg_response_time": 69.65347211539465,
+    "charging_wait": 0.0,
+    "score": 1851.5367454067673,
+    "station_utilization": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 0.0
+    },
+    "seed": 20260309,
+    "allow_collaboration": true
+  },
+  {
+    "scenario": "small",
+    "strategy": "static_exact_fullinfo",
+    "mode": "static_exact_cplex",
+    "completed": 14,
+    "unserved": 0,
+    "overtime": 0,
+    "distance": 1453.1788459416282,
+    "avg_response_time": 56.89625246507727,
+    "charging_wait": 0.0,
+    "score": 2127.6268423248257,
+    "seed": 20260309,
+    "solver_backend": "cplex",
+    "solver_status": "time limit exceeded",
+    "solver_optimal": false,
+    "solver_gap": 0.26775737046684817,
+    "solver_runtime_sec": 1.1548049449920654,
+    "solver_objective": 2967.6268423248257,
+    "exact_reduced_for_license": false,
+    "exact_original_tasks": 14,
+    "exact_original_vehicles": 6,
+    "exact_reduction_factor": 1.0,
+    "exact_task_count": 14,
+    "exact_vehicle_count": 6
+  }
+]

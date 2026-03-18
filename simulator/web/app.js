@@ -2,6 +2,7 @@
 const MAP_WIDTH = 1000;
 const MAP_HEIGHT = 700;
 const MAP_PADDING = 42;
+const REPLAY_SIM_TIME_TO_MS = 26;
 
 const VEHICLE_COLORS = [
   "#1F7EDD",
@@ -551,7 +552,7 @@ async function stepReplay() {
   state.eventIndex += 1;
 
   const routes = [];
-  state.currentTime = Number(event.dispatch_time);
+  state.currentTime = Math.max(state.currentTime, Number(event.dispatch_time));
   state.recentTaskIds = new Set([event.task_id]);
   state.taskState.set(event.task_id, "delivering");
 
@@ -899,7 +900,10 @@ async function animateSingleCar(route, points, dispatchTime) {
   }
 
   const metrics = pathMetrics(points);
-  const durationMs = clamp(metrics.total * 9, 900, 3800);
+  const simDuration = Math.max(1, completion - dispatch);
+  const durationByTime = simDuration * REPLAY_SIM_TIME_TO_MS;
+  const durationByGeometry = metrics.total * 7;
+  const durationMs = clamp(Math.max(durationByTime, durationByGeometry), 900, 12000);
   const preChargeRatio = estimatePreChargeDistanceRatio(route, points, metrics.total);
   const batteryAtTime = buildBatteryInterpolator(
     startBattery,
@@ -927,6 +931,7 @@ async function animateSingleCar(route, points, dispatchTime) {
 
       if (vehicle) {
         const simTime = dispatch + (completion - dispatch) * progress;
+        state.currentTime = Math.max(state.currentTime, simTime);
         vehicle.battery = batteryAtTime(simTime);
         if (frameNow - state.lastVehiclePanelPaintAt > 90) {
           state.lastVehiclePanelPaintAt = frameNow;
@@ -941,6 +946,7 @@ async function animateSingleCar(route, points, dispatchTime) {
         if (vehicle) {
           vehicle.battery = finalBattery;
           vehicle.currentNode = Number(route.final_node ?? vehicle.currentNode);
+          state.currentTime = Math.max(state.currentTime, completion);
           renderVehicleStatuses();
         }
         resolve();
@@ -1189,7 +1195,11 @@ function renderVehicleStatuses() {
 }
 
 function resolveVehicleStatus(vehicle, now) {
-  if (!state.activeReplayVehicleIds.has(Number(vehicle.vehicleId))) {
+  const vehicleId = Number(vehicle.vehicleId);
+  const busyUntil = Number(vehicle.busyUntil ?? 0);
+  const isAnimating = state.activeReplayVehicleIds.has(vehicleId);
+  const isBusyBySchedule = Number.isFinite(busyUntil) && now < busyUntil - 1e-9;
+  if (!isAnimating && !isBusyBySchedule) {
     return "idle";
   }
   if (

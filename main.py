@@ -9,7 +9,6 @@ from typing import Dict, Iterable, List, TypeVar
 
 from simulator.exact_solver import HAS_CPLEX, solve_with_cplex
 from simulator.simulation import SCENARIO_SCALES, ScenarioData, build_scenario, run_strategies_for_scenario
-from simulator.static_oracle import solve_static_oracle_bnb
 from simulator.strategies import (
     AuctionBasedStrategy,
     HyperHeuristicStrategy,
@@ -62,9 +61,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--no-oracle", action="store_true", help="Disable static full-information comparison")
     parser.add_argument(
         "--exact-backend",
-        choices=["cplex", "bnb"],
+        choices=["cplex"],
         default="cplex",
-        help="Static solver backend. cplex is exact MIP backend, bnb is fallback.",
+        help="Static solver backend. cplex is exact MIP backend.",
     )
     parser.add_argument(
         "--exact-scales",
@@ -535,32 +534,25 @@ def main() -> None:
                     all_rows.append(fail_row)
                     all_raw.append(fail_row)
             else:
-                task_limit = min(8, len(scenario.tasks))
-                vehicle_limit = min(5, len(scenario.vehicles))
-                bnb = solve_static_oracle_bnb(
-                    scenario,
-                    task_limit=task_limit,
-                    vehicle_limit=vehicle_limit,
-                    node_limit=1200000,
-                )
-                bnb_row = {
+                exact_meta = _build_exact_meta(scenario)
+                fail_row = {
                     "scenario": scale,
-                    "strategy": f"oracle_static_bnb_{task_limit}",
-                    "mode": "static_oracle_bnb",
-                    "completed": bnb.completed,
-                    "unserved": bnb.unserved,
-                    "overtime": bnb.overtime,
-                    "distance": bnb.total_distance,
-                    "avg_response_time": bnb.avg_response_time,
+                    "strategy": "static_exact_fullinfo",
+                    "mode": "static_exact_cplex_failed",
+                    "completed": 0,
+                    "unserved": len(scenario.tasks),
+                    "overtime": 0,
+                    "distance": 0.0,
+                    "avg_response_time": 0.0,
                     "charging_wait": 0.0,
-                    "score": bnb.score,
+                    "score": -scenario.config.unserved_penalty * len(scenario.tasks),
                     "seed": scenario_seed,
-                    "solver_backend": "bnb",
-                    "solver_runtime_sec": bnb.runtime_sec,
-                    "solver_status": "OPTIMAL" if bnb.expanded_nodes < 1200000 else "CUTOFF",
+                    "solver_backend": "cplex",
+                    "solver_status": "FAILED: docplex/cplex is not available in current environment",
+                    **exact_meta,
                 }
-                all_rows.append(bnb_row)
-                all_raw.append(bnb_row)
+                all_rows.append(fail_row)
+                all_raw.append(fail_row)
 
     print_table(all_rows)
 
