@@ -8,10 +8,11 @@ from datetime import datetime
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, Iterable, List, Tuple, TypeVar
 from urllib.parse import urlparse
 
-from .simulation import SCENARIO_SCALES, WEATHER_MODES, FleetSimulator, build_scenario, run_strategies_for_scenario
+from .exact_solver import HAS_CPLEX, solve_with_cplex
+from .simulation import SCENARIO_SCALES, WEATHER_MODES, FleetSimulator, ScenarioData, build_scenario, run_strategies_for_scenario
 from .strategies import (
     AuctionBasedStrategy,
     HyperHeuristicStrategy,
@@ -52,6 +53,11 @@ BENCHMARK_METRICS = [
     {"id": "charging_wait", "label": "Charging Wait", "direction": "asc"},
 ]
 
+T = TypeVar("T")
+PROMO_MODEL_VAR_LIMIT = 1000
+PROMO_MODEL_CONSTR_LIMIT = 1000
+PROMO_SAFETY_MARGIN = 0.90
+
 
 class DashboardRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802
@@ -76,6 +82,9 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
             return
         if path == "/api/benchmarks":
             self._write_json(_load_benchmark_payload())
+            return
+        if path == "/api/weather-stats":
+            self._write_json(_load_weather_stats_payload())
             return
 
         if path in {"/", "/index.html"}:
@@ -312,8 +321,16 @@ def _extract_common_args(payload: dict) -> Tuple[str, int, bool, str]:
 
 def _weather_stats(payload: dict) -> dict:
     _, seed, allow_collaboration, _ = _extract_common_args(payload)
+    include_static_cplex = bool(payload.get("include_static_cplex", True))
+    exact_time_limit = max(10, _safe_int(payload.get("exact_time_limit", 120), 120))
+    exact_mip_gap = max(0.0, _safe_float(payload.get("exact_mip_gap", 0.0), 0.0))
     strategy_names = list(STRATEGY_REGISTRY.keys())
     rows: List[dict] = []
+    normal_static_by_scale = (
+        _load_normal_static_cplex_rows(seed=seed, allow_collaboration=allow_collaboration)
+        if include_static_cplex
+        else {}
+    )
 
     for scale in SCENARIO_SCALES.keys():
         # Align with benchmark seed policy in main.py: seed + idx * 100.
@@ -338,6 +355,7 @@ def _weather_stats(payload: dict) -> dict:
                         "scenario": summary.scenario,
                         "weather": weather_mode,
                         "strategy": summary.strategy,
+                        "mode": "dynamic",
                         "completed": summary.completed_tasks,
                         "overtime": summary.overtime_tasks,
                         "unserved": summary.unserved_tasks,
@@ -348,12 +366,29 @@ def _weather_stats(payload: dict) -> dict:
                         "seed": scenario_seed,
                     }
                 )
+            if include_static_cplex:
+                if weather_mode == "normal" and scale in normal_static_by_scale:
+                    rows.append(dict(normal_static_by_scale[scale]))
+                else:
+                    rows.append(
+                        _solve_weather_static_cplex(
+                            scale=scale,
+                            seed=scenario_seed,
+                            allow_collaboration=allow_collaboration,
+                            weather_mode=weather_mode,
+                            exact_time_limit=exact_time_limit,
+                            exact_mip_gap=exact_mip_gap,
+                        )
+                    )
 
     payload_out = {
         "rows": rows,
         "scales": list(SCENARIO_SCALES.keys()),
         "weather_modes": list(WEATHER_MODES),
-        "strategies": strategy_names,
+        "strategies": strategy_names + (["static_exact_fullinfo"] if include_static_cplex else []),
+        "include_static_cplex": include_static_cplex,
+        "exact_time_limit": exact_time_limit,
+        "exact_mip_gap": exact_mip_gap,
         "saved_file": "",
         "saved_at": datetime.now().isoformat(timespec="seconds"),
     }
@@ -382,6 +417,429 @@ def _scenario_seed_for_scale(base_seed: int, scale: str) -> int:
     except ValueError:
         idx = 0
     return int(base_seed) + idx * 100
+
+
+def _load_weather_stats_payload() -> dict:
+    path = RESULTS_DIR / "weather_stats.json"
+    if not path.exists() or not path.is_file():
+        return {
+            "rows": [],
+            "scales": list(SCENARIO_SCALES.keys()),
+            "weather_modes": list(WEATHER_MODES),
+            "strategies": [],
+            "saved_file": "",
+            "updated_at": "",
+            "error": "weather_stats.json not found",
+        }
+
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {
+            "rows": [],
+            "scales": list(SCENARIO_SCALES.keys()),
+            "weather_modes": list(WEATHER_MODES),
+            "strategies": [],
+            "saved_file": path.name,
+            "updated_at": _format_mtime(path),
+            "error": "Invalid JSON content",
+        }
+
+    rows_raw = raw.get("rows", []) if isinstance(raw, dict) else raw
+    rows: List[dict] = []
+    if isinstance(rows_raw, list):
+        for item in rows_raw:
+            if isinstance(item, dict):
+                rows.append(item)
+
+    scales = sorted({str(row.get("scenario", "")) for row in rows if row.get("scenario")})
+    weather_modes = sorted({str(row.get("weather", "")) for row in rows if row.get("weather")})
+    strategies = sorted({str(row.get("strategy", "")) for row in rows if row.get("strategy")})
+
+    return {
+        "rows": rows,
+        "scales": scales or list(SCENARIO_SCALES.keys()),
+        "weather_modes": weather_modes or list(WEATHER_MODES),
+        "strategies": strategies,
+        "saved_file": path.name,
+        "updated_at": _format_mtime(path),
+    }
+
+
+def _load_normal_static_cplex_rows(seed: int, allow_collaboration: bool) -> Dict[str, dict]:
+    path = RESULTS_DIR / "summary_cplex.json"
+    if not path.exists() or not path.is_file():
+        return {}
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    if not isinstance(raw, list):
+        return {}
+
+    result: Dict[str, dict] = {}
+    for scale in SCENARIO_SCALES.keys():
+        scenario_seed = _scenario_seed_for_scale(seed, scale)
+        picked = _pick_best_static_cplex_row(
+            raw_rows=raw,
+            scale=scale,
+            scenario_seed=scenario_seed,
+            allow_collaboration=allow_collaboration,
+        )
+        if picked is None:
+            continue
+        result[scale] = _normalize_static_weather_row(
+            row=picked,
+            scale=scale,
+            weather_mode="normal",
+            fallback_seed=scenario_seed,
+            source="summary_cplex.json",
+        )
+    return result
+
+
+def _pick_best_static_cplex_row(
+    raw_rows: List[object],
+    scale: str,
+    scenario_seed: int,
+    allow_collaboration: bool,
+) -> dict | None:
+    best_row = None
+    best_score = -10**9
+    for item in raw_rows:
+        if not isinstance(item, dict):
+            continue
+        if str(item.get("scenario", "")) != scale:
+            continue
+        mode = str(item.get("mode", ""))
+        if not mode.startswith("static_exact_cplex"):
+            continue
+        score = 0
+        row_seed = _safe_int(item.get("seed", -1), -1)
+        if row_seed == scenario_seed:
+            score += 120
+        elif row_seed >= 0:
+            score += 20
+
+        if "allow_collaboration" in item and bool(item.get("allow_collaboration")) == allow_collaboration:
+            score += 30
+
+        if "failed" not in mode.lower():
+            score += 40
+        if "reduced" not in mode.lower():
+            score += 8
+
+        solver_status = str(item.get("solver_status", ""))
+        if solver_status.upper().startswith("FAILED"):
+            score -= 25
+
+        if score > best_score:
+            best_score = score
+            best_row = item
+    return best_row
+
+
+def _normalize_static_weather_row(
+    row: dict,
+    scale: str,
+    weather_mode: str,
+    fallback_seed: int,
+    source: str,
+) -> dict:
+    return {
+        "scenario": scale,
+        "weather": weather_mode,
+        "strategy": str(row.get("strategy", "static_exact_fullinfo")),
+        "mode": str(row.get("mode", "static_exact_cplex")),
+        "completed": _safe_int(row.get("completed", 0), 0),
+        "overtime": _safe_int(row.get("overtime", 0), 0),
+        "unserved": _safe_int(row.get("unserved", 0), 0),
+        "score": _safe_float(row.get("score", 0.0), 0.0),
+        "distance": _safe_float(row.get("distance", 0.0), 0.0),
+        "avg_response_time": _safe_float(row.get("avg_response_time", 0.0), 0.0),
+        "charging_wait": _safe_float(row.get("charging_wait", 0.0), 0.0),
+        "seed": _safe_int(row.get("seed", fallback_seed), fallback_seed),
+        "solver_backend": row.get("solver_backend", "cplex"),
+        "solver_status": row.get("solver_status"),
+        "solver_optimal": row.get("solver_optimal"),
+        "source": source,
+    }
+
+
+def _solve_weather_static_cplex(
+    scale: str,
+    seed: int,
+    allow_collaboration: bool,
+    weather_mode: str,
+    exact_time_limit: int,
+    exact_mip_gap: float,
+) -> dict:
+    scenario = build_scenario(
+        scale_name=scale,
+        seed=seed,
+        allow_collaboration=allow_collaboration,
+        weather_mode=weather_mode,
+    )
+    if not HAS_CPLEX:
+        return _build_static_cplex_failed_weather_row(
+            scenario=scenario,
+            weather_mode=weather_mode,
+            mode="static_exact_cplex_failed",
+            strategy="static_exact_fullinfo",
+            solver_status="FAILED: docplex/cplex is not available in current environment",
+        )
+
+    exact_scenario = scenario
+    exact_meta = _build_weather_exact_meta(scenario)
+    exact = None
+    fail_exc: Exception | None = None
+    try:
+        exact = solve_with_cplex(
+            exact_scenario,
+            time_limit_sec=exact_time_limit,
+            mip_gap=exact_mip_gap,
+        )
+    except Exception as exc:
+        fail_exc = exc
+        should_retry_reduced = (
+            scale in {"medium", "large"}
+            and _is_cplex_license_limit_error(str(exc))
+        )
+        if should_retry_reduced:
+            retry_scenario, retry_meta = _prepare_weather_exact_scenario_for_license(
+                scenario=scenario,
+                scale_name=scale,
+            )
+            if retry_meta["exact_reduced_for_license"]:
+                exact_scenario = retry_scenario
+                exact_meta = retry_meta
+                try:
+                    exact = solve_with_cplex(
+                        exact_scenario,
+                        time_limit_sec=exact_time_limit,
+                        mip_gap=exact_mip_gap,
+                    )
+                    fail_exc = None
+                except Exception as retry_exc:
+                    fail_exc = retry_exc
+
+    if exact is not None and fail_exc is None:
+        mode_name = "static_exact_cplex_reduced" if exact_meta["exact_reduced_for_license"] else "static_exact_cplex"
+        strategy_name = (
+            "static_exact_fullinfo_reduced"
+            if exact_meta["exact_reduced_for_license"]
+            else "static_exact_fullinfo"
+        )
+        return {
+            "scenario": scale,
+            "weather": weather_mode,
+            "strategy": strategy_name,
+            "mode": mode_name,
+            "completed": int(exact.completed),
+            "unserved": int(exact.unserved),
+            "overtime": int(exact.overtime),
+            "distance": float(exact.total_distance),
+            "avg_response_time": float(exact.avg_response_time),
+            "charging_wait": float(exact.total_charging_wait),
+            "score": float(exact.final_score),
+            "seed": int(seed),
+            "solver_backend": exact.backend,
+            "solver_status": exact.status,
+            "solver_optimal": exact.optimal,
+            "solver_gap": exact.mip_gap,
+            "solver_runtime_sec": exact.runtime_sec,
+            "solver_objective": exact.objective_value,
+            "source": "computed",
+            **exact_meta,
+        }
+
+    fail_mode = (
+        "static_exact_cplex_reduced_failed"
+        if exact_meta["exact_reduced_for_license"]
+        else "static_exact_cplex_failed"
+    )
+    fail_strategy = (
+        "static_exact_fullinfo_reduced"
+        if exact_meta["exact_reduced_for_license"]
+        else "static_exact_fullinfo"
+    )
+    return _build_static_cplex_failed_weather_row(
+        scenario=exact_scenario,
+        weather_mode=weather_mode,
+        mode=fail_mode,
+        strategy=fail_strategy,
+        solver_status=f"FAILED: {fail_exc}",
+        **exact_meta,
+    )
+
+
+def _build_static_cplex_failed_weather_row(
+    scenario: ScenarioData,
+    weather_mode: str,
+    mode: str,
+    strategy: str,
+    solver_status: str,
+    **extra: object,
+) -> dict:
+    task_count = len(scenario.tasks)
+    return {
+        "scenario": scenario.config.name,
+        "weather": weather_mode,
+        "strategy": strategy,
+        "mode": mode,
+        "completed": 0,
+        "unserved": task_count,
+        "overtime": 0,
+        "distance": 0.0,
+        "avg_response_time": 0.0,
+        "charging_wait": 0.0,
+        "score": -scenario.config.unserved_penalty * task_count,
+        "seed": int(scenario.config.seed),
+        "solver_backend": "cplex",
+        "solver_status": solver_status,
+        "source": "computed",
+        **extra,
+    }
+
+
+def _build_weather_exact_meta(scenario: ScenarioData) -> dict:
+    return {
+        "exact_reduced_for_license": False,
+        "exact_original_tasks": len(scenario.tasks),
+        "exact_original_vehicles": len(scenario.vehicles),
+        "exact_reduction_factor": 1.0,
+        "exact_task_count": len(scenario.tasks),
+        "exact_vehicle_count": len(scenario.vehicles),
+    }
+
+
+def _estimate_weather_exact_model_upper_bound(task_count: int, vehicle_count: int) -> tuple[int, int]:
+    x_vars = task_count * vehicle_count
+    base_vars = 4 * task_count
+    order_vars = vehicle_count * task_count * (task_count - 1) // 2
+    var_count = x_vars + base_vars + order_vars
+    base_constraints = 7 * task_count
+    order_constraints = 2 * order_vars
+    constraint_count = base_constraints + order_constraints
+    return var_count, constraint_count
+
+
+def _find_weather_license_safe_reduction(task_count: int, vehicle_count: int) -> tuple[int, int, float]:
+    var_limit = int(PROMO_MODEL_VAR_LIMIT * PROMO_SAFETY_MARGIN)
+    constr_limit = int(PROMO_MODEL_CONSTR_LIMIT * PROMO_SAFETY_MARGIN)
+    min_task = 2 if task_count >= 2 else 1
+    min_vehicle = 2 if vehicle_count >= 2 else 1
+
+    factor = 1.0
+    while factor >= 0.03:
+        reduced_tasks = min(task_count, max(min_task, int(round(task_count * factor))))
+        reduced_vehicles = min(vehicle_count, max(min_vehicle, int(round(vehicle_count * factor))))
+        vars_est, constr_est = _estimate_weather_exact_model_upper_bound(reduced_tasks, reduced_vehicles)
+        if vars_est <= var_limit and constr_est <= constr_limit:
+            return reduced_tasks, reduced_vehicles, factor
+        factor *= 0.94
+
+    return min(task_count, 12), min(vehicle_count, max(min_vehicle, 2)), factor
+
+
+def _sample_evenly(items: List[T], target_count: int) -> List[T]:
+    if target_count >= len(items):
+        return list(items)
+    if target_count <= 0:
+        return []
+    if target_count == 1:
+        return [items[0]]
+
+    n = len(items)
+    indices = [int(i * n / target_count) for i in range(target_count)]
+    indices[-1] = n - 1
+
+    unique_indices: List[int] = []
+    seen = set()
+    for idx in indices:
+        if idx in seen:
+            continue
+        seen.add(idx)
+        unique_indices.append(idx)
+
+    if len(unique_indices) < target_count:
+        for idx in range(n):
+            if idx in seen:
+                continue
+            unique_indices.append(idx)
+            seen.add(idx)
+            if len(unique_indices) >= target_count:
+                break
+
+    unique_indices.sort()
+    return [items[idx] for idx in unique_indices[:target_count]]
+
+
+def _build_weather_reduced_exact_scenario(scenario: ScenarioData, task_count: int, vehicle_count: int) -> ScenarioData:
+    tasks_sorted = sorted(scenario.tasks, key=lambda item: (item.release_time, item.deadline, item.task_id))
+    reduced_tasks = _sample_evenly(tasks_sorted, task_count)
+
+    vehicles_sorted = sorted(
+        scenario.vehicles.values(),
+        key=lambda item: (-item.capacity, item.vehicle_id),
+    )
+    selected_vehicle_ids = [vehicle.vehicle_id for vehicle in vehicles_sorted[:vehicle_count]]
+    reduced_vehicles = {vehicle_id: scenario.vehicles[vehicle_id] for vehicle_id in sorted(selected_vehicle_ids)}
+
+    return ScenarioData(
+        graph=scenario.graph,
+        tasks=reduced_tasks,
+        vehicles=reduced_vehicles,
+        stations=scenario.stations,
+        config=scenario.config,
+    )
+
+
+def _prepare_weather_exact_scenario_for_license(
+    scenario: ScenarioData,
+    scale_name: str,
+) -> tuple[ScenarioData, dict]:
+    meta = _build_weather_exact_meta(scenario)
+    if scale_name not in {"medium", "large"}:
+        return scenario, meta
+
+    reduced_tasks, reduced_vehicles, factor = _find_weather_license_safe_reduction(
+        task_count=len(scenario.tasks),
+        vehicle_count=len(scenario.vehicles),
+    )
+    if reduced_tasks >= len(scenario.tasks) and reduced_vehicles >= len(scenario.vehicles):
+        return scenario, meta
+
+    reduced_scenario = _build_weather_reduced_exact_scenario(
+        scenario=scenario,
+        task_count=reduced_tasks,
+        vehicle_count=reduced_vehicles,
+    )
+    meta.update(
+        {
+            "exact_reduced_for_license": True,
+            "exact_reduction_factor": round(factor, 4),
+            "exact_task_count": reduced_tasks,
+            "exact_vehicle_count": reduced_vehicles,
+        }
+    )
+    return reduced_scenario, meta
+
+
+def _is_cplex_license_limit_error(text: str) -> bool:
+    lowered = str(text).lower()
+    keywords = [
+        "size limit",
+        "problem size",
+        "too many variables",
+        "too many constraints",
+        "community edition",
+        "promotional",
+        "license",
+        "cplex error 1016",
+        "error 1016",
+    ]
+    return any(keyword in lowered for keyword in keywords)
 
 
 def _serialize_scenario(scenario) -> dict:

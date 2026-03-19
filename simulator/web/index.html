@@ -153,9 +153,18 @@
             <option value="large">large</option>
           </select>
         </label>
-        <button id="runWeatherStatsBtn" class="ghost">Run Weather Stats</button>
+        <label>
+          Weather
+          <select id="weatherStatsWeather">
+            <option value="all">all</option>
+            <option value="normal">normal</option>
+            <option value="rain">rain</option>
+            <option value="congestion">congestion</option>
+          </select>
+        </label>
+        <button id="runWeatherStatsBtn" class="ghost">Refresh Weather Stats</button>
       </div>
-      <div id="weatherStatsStatus" class="weather-status">Click "Run Weather Stats" to compute all scales and weather modes.</div>
+      <div id="weatherStatsStatus" class="weather-status">Loading cached weather stats from results/weather_stats.json ...</div>
       <div id="weatherStatsTable" class="benchmark-table-wrap"></div>
     </section>
 

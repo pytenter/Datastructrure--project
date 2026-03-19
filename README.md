@@ -82,12 +82,16 @@ Default URL:
 - `rain` and `congestion` both:
   - add map visual effects in replay
   - change traffic multipliers in simulation (longer travel time windows + incident windows)
-- To compare outcomes across all scales and strategies:
-  - open **Weather Scenario Statistics**
-  - click **Run Weather Stats**
-  - table shows `Completed / Overtime / Unserved` for:
-    - `small`, `medium`, `large`
-    - `normal`, `rain`, `congestion`
+- Precompute weather stats json (recommended before opening dashboard):
+
+```bash
+python precompute_weather_stats.py --seed 20260309 --exact-time-limit 120 --exact-mip-gap 0.0
+```
+
+- Dashboard now loads cached weather stats directly from `results/weather_stats.json` on page load.
+- In **Weather Stats**, use table filters for:
+  - `Table Scale` (`small/medium/large`)
+  - `Weather` (`normal/rain/congestion`)
 
 ### Run dynamic-only benchmark
 

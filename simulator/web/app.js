@@ -48,6 +48,7 @@ const dom = {
   weatherStatsStatus: document.getElementById("weatherStatsStatus"),
   weatherStatsTable: document.getElementById("weatherStatsTable"),
   weatherStatsScale: document.getElementById("weatherStatsScale"),
+  weatherStatsWeather: document.getElementById("weatherStatsWeather"),
   weatherFx: document.getElementById("weatherFx"),
   mapSvg: document.getElementById("mapSvg"),
   edgesLayer: document.getElementById("edgesLayer"),
@@ -105,7 +106,7 @@ function bindEvents() {
   dom.stepBtn.addEventListener("click", () => void stepReplay());
   dom.resetBtn.addEventListener("click", resetReplay);
   dom.refreshBenchmarkBtn.addEventListener("click", () => void loadBenchmarks());
-  dom.runWeatherStatsBtn.addEventListener("click", () => void runWeatherStats());
+  dom.runWeatherStatsBtn.addEventListener("click", () => void loadWeatherStats());
   dom.weatherSelect.addEventListener("change", () => {
     setWeatherEffect(dom.weatherSelect.value);
   });
@@ -118,6 +119,9 @@ function bindEvents() {
   dom.benchmarkMetric.addEventListener("change", renderBenchmarkView);
   dom.benchmarkTableScale.addEventListener("change", renderBenchmarkView);
   dom.weatherStatsScale.addEventListener("change", () => {
+    renderWeatherStatsTable(state.weatherStatsData?.rows || []);
+  });
+  dom.weatherStatsWeather.addEventListener("change", () => {
     renderWeatherStatsTable(state.weatherStatsData?.rows || []);
   });
 }
@@ -134,11 +138,17 @@ async function initialize() {
     [{ value: "all", label: "all" }, ...(meta.scales || []).map((value) => ({ value, label: value }))],
     "all"
   );
+  fillSelectByItems(
+    dom.weatherStatsWeather,
+    [{ value: "all", label: "all" }, ...((meta.weather_modes || ["normal", "rain", "congestion"]).map((value) => ({ value, label: value })))],
+    "all"
+  );
   dom.seedInput.value = String(meta.defaults.seed);
   dom.collabInput.checked = Boolean(meta.defaults.allow_collaboration);
   setWeatherEffect(dom.weatherSelect.value);
 
   await loadBenchmarks();
+  await loadWeatherStats();
   setStatus("Status: choose options and run simulation");
 }
 
@@ -1657,25 +1667,43 @@ function setWeatherEffect(mode) {
   dom.weatherFx.classList.add(weatherMode);
 }
 
-async function runWeatherStats() {
-  const payload = readCommonPayload();
-  dom.weatherStatsStatus.textContent = "Computing weather stats for all scales and strategies...";
+async function loadWeatherStats() {
+  dom.weatherStatsStatus.textContent = "Loading cached weather stats...";
   dom.weatherStatsTable.innerHTML = "";
   try {
-    const data = await postJson("/api/weather-stats", payload);
+    const data = await fetchJson("/api/weather-stats");
     state.weatherStatsData = data;
+    if (Array.isArray(data.weather_modes) && data.weather_modes.length) {
+      const currentWeather = dom.weatherStatsWeather.value || "all";
+      const options = [{ value: "all", label: "all" }, ...data.weather_modes.map((value) => ({ value, label: value }))];
+      const selected = options.some((item) => item.value === currentWeather) ? currentWeather : "all";
+      fillSelectByItems(dom.weatherStatsWeather, options, selected);
+    }
+    if (Array.isArray(data.scales) && data.scales.length) {
+      const currentScale = dom.weatherStatsScale.value || "all";
+      const options = [{ value: "all", label: "all" }, ...data.scales.map((value) => ({ value, label: value }))];
+      const selected = options.some((item) => item.value === currentScale) ? currentScale : "all";
+      fillSelectByItems(dom.weatherStatsScale, options, selected);
+    }
     renderWeatherStatsTable(data.rows || []);
-    const saved = data.saved_file ? ` | saved=${data.saved_file}` : "";
-    dom.weatherStatsStatus.textContent = `Weather stats ready: rows=${(data.rows || []).length}${saved}`;
+    const saved = data.saved_file ? ` | file=${data.saved_file}` : "";
+    const updated = data.updated_at ? ` | updated=${String(data.updated_at).replace("T", " ")}` : "";
+    const err = data.error ? ` | note=${data.error}` : "";
+    dom.weatherStatsStatus.textContent = `Weather stats loaded: rows=${(data.rows || []).length}${saved}${updated}${err}`;
   } catch (err) {
-    dom.weatherStatsStatus.textContent = `Weather stats failed: ${err.message}`;
+    dom.weatherStatsStatus.textContent = `Weather stats load failed: ${err.message}`;
     dom.weatherStatsTable.innerHTML = "";
   }
 }
 
 function renderWeatherStatsTable(rows) {
   const scale = dom.weatherStatsScale.value || "all";
-  const filtered = rows.filter((row) => scale === "all" || String(row.scenario) === scale);
+  const weather = dom.weatherStatsWeather.value || "all";
+  const filtered = rows.filter(
+    (row) =>
+      (scale === "all" || String(row.scenario) === scale) &&
+      (weather === "all" || String(row.weather) === weather)
+  );
   if (!filtered.length) {
     dom.weatherStatsTable.innerHTML = "<div style=\"padding:10px;color:#5d7387;font-size:13px;\">No weather stats data.</div>";
     return;
@@ -1691,6 +1719,11 @@ function renderWeatherStatsTable(rows) {
     if (wa !== wb) {
       return wa.localeCompare(wb);
     }
+    const ma = String(a.mode || "");
+    const mb = String(b.mode || "");
+    if (ma !== mb) {
+      return ma.localeCompare(mb);
+    }
     return String(a.strategy || "").localeCompare(String(b.strategy || ""));
   });
 
@@ -1698,7 +1731,7 @@ function renderWeatherStatsTable(rows) {
   table.className = "benchmark-table";
   const thead = document.createElement("thead");
   const trh = document.createElement("tr");
-  ["Scenario", "Weather", "Strategy", "Completed", "Overtime", "Unserved"].forEach((name) => {
+  ["Scenario", "Weather", "Strategy", "Mode", "Completed", "Overtime", "Unserved"].forEach((name) => {
     const th = document.createElement("th");
     th.textContent = name;
     trh.appendChild(th);
@@ -1710,7 +1743,8 @@ function renderWeatherStatsTable(rows) {
     [
       row.scenario,
       row.weather,
-      row.strategy,
+      cleanBenchmarkLabel(row.strategy),
+      cleanBenchmarkLabel(row.mode),
       String(numberValue(row.completed).toFixed(0)),
       String(numberValue(row.overtime).toFixed(0)),
       String(numberValue(row.unserved).toFixed(0))
