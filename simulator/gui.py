@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
 from urllib.parse import urlparse
 
-from .simulation import SCENARIO_SCALES, FleetSimulator, build_scenario, run_strategies_for_scenario
+from .simulation import SCENARIO_SCALES, WEATHER_MODES, FleetSimulator, build_scenario, run_strategies_for_scenario
 from .strategies import (
     AuctionBasedStrategy,
     HyperHeuristicStrategy,
@@ -68,7 +68,9 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
                         "strategy": "urgency_distance",
                         "seed": 20260309,
                         "allow_collaboration": True,
+                        "weather_mode": "normal",
                     },
+                    "weather_modes": list(WEATHER_MODES),
                 }
             )
             return
@@ -100,6 +102,11 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
         if parsed.path == "/api/compare":
             payload = self._read_json_body()
             response = _compare_strategies(payload)
+            self._write_json(response)
+            return
+        if parsed.path == "/api/weather-stats":
+            payload = self._read_json_body()
+            response = _weather_stats(payload)
             self._write_json(response)
             return
 
@@ -142,11 +149,17 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
 
 
 def _run_single_simulation(payload: dict) -> dict:
-    scale, seed, allow_collaboration = _extract_common_args(payload)
+    scale, seed, allow_collaboration, weather_mode = _extract_common_args(payload)
+    scenario_seed = _scenario_seed_for_scale(seed, scale)
     strategy_name = str(payload.get("strategy", "urgency_distance"))
-    strategy = _build_strategy_instance(strategy_name, seed)
+    strategy = _build_strategy_instance(strategy_name, scenario_seed)
 
-    scenario = build_scenario(scale_name=scale, seed=seed, allow_collaboration=allow_collaboration)
+    scenario = build_scenario(
+        scale_name=scale,
+        seed=scenario_seed,
+        allow_collaboration=allow_collaboration,
+        weather_mode=weather_mode,
+    )
     scenario_snapshot = copy.deepcopy(scenario)
     simulator = FleetSimulator(copy.deepcopy(scenario))
     summary, _, events = simulator.run(strategy)
@@ -204,7 +217,8 @@ def _run_single_simulation(payload: dict) -> dict:
 
 
 def _compare_strategies(payload: dict) -> dict:
-    scale, seed, allow_collaboration = _extract_common_args(payload)
+    scale, seed, allow_collaboration, weather_mode = _extract_common_args(payload)
+    base_seed = _scenario_seed_for_scale(seed, scale)
     runs = payload.get("compare_runs", 3)
     try:
         runs = int(runs)
@@ -233,8 +247,13 @@ def _compare_strategies(payload: dict) -> dict:
         }
 
     for idx in range(runs):
-        scenario_seed = seed + idx * 17
-        scenario = build_scenario(scale_name=scale, seed=scenario_seed, allow_collaboration=allow_collaboration)
+        scenario_seed = base_seed + idx * 17
+        scenario = build_scenario(
+            scale_name=scale,
+            seed=scenario_seed,
+            allow_collaboration=allow_collaboration,
+            weather_mode=weather_mode,
+        )
         strategy_instances = [
             NearestTaskFirstStrategy(),
             MaxWeightFirstStrategy(),
@@ -274,7 +293,7 @@ def _compare_strategies(payload: dict) -> dict:
     return {"ranking": ranking, "compare_runs": runs}
 
 
-def _extract_common_args(payload: dict) -> Tuple[str, int, bool]:
+def _extract_common_args(payload: dict) -> Tuple[str, int, bool, str]:
     scale = str(payload.get("scale", "small"))
     if scale not in SCENARIO_SCALES:
         scale = "small"
@@ -285,7 +304,68 @@ def _extract_common_args(payload: dict) -> Tuple[str, int, bool]:
         seed = 20260309
 
     allow_collaboration = bool(payload.get("allow_collaboration", True))
-    return scale, seed, allow_collaboration
+    weather_mode = str(payload.get("weather_mode", "normal"))
+    if weather_mode not in WEATHER_MODES:
+        weather_mode = "normal"
+    return scale, seed, allow_collaboration, weather_mode
+
+
+def _weather_stats(payload: dict) -> dict:
+    _, seed, allow_collaboration, _ = _extract_common_args(payload)
+    strategy_names = list(STRATEGY_REGISTRY.keys())
+    rows: List[dict] = []
+
+    for scale in SCENARIO_SCALES.keys():
+        # Align with benchmark seed policy in main.py: seed + idx * 100.
+        # Within the same scale, weather modes share the same scenario seed so
+        # comparison only reflects weather/traffic differences.
+        scenario_seed = _scenario_seed_for_scale(seed, scale)
+        for weather_mode in WEATHER_MODES:
+            scenario = build_scenario(
+                scale_name=scale,
+                seed=scenario_seed,
+                allow_collaboration=allow_collaboration,
+                weather_mode=weather_mode,
+            )
+            strategy_instances = []
+            for i, name in enumerate(strategy_names):
+                # Keep seed policy consistent with main.py benchmark runner.
+                strategy_instances.append(_build_strategy_instance(name, scenario_seed + i))
+            outputs = run_strategies_for_scenario(scenario, strategy_instances)
+            for summary, _, _ in outputs:
+                rows.append(
+                    {
+                        "scenario": summary.scenario,
+                        "weather": weather_mode,
+                        "strategy": summary.strategy,
+                        "completed": summary.completed_tasks,
+                        "overtime": summary.overtime_tasks,
+                        "unserved": summary.unserved_tasks,
+                        "score": summary.final_score,
+                        "distance": summary.total_distance,
+                        "avg_response_time": summary.avg_response_time,
+                        "charging_wait": summary.total_charging_wait,
+                        "seed": scenario_seed,
+                    }
+                )
+
+    payload_out = {
+        "rows": rows,
+        "scales": list(SCENARIO_SCALES.keys()),
+        "weather_modes": list(WEATHER_MODES),
+        "strategies": strategy_names,
+        "saved_file": "",
+        "saved_at": datetime.now().isoformat(timespec="seconds"),
+    }
+    try:
+        RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+        out_path = RESULTS_DIR / "weather_stats.json"
+        # Persist rows in benchmark-like format (list of row dicts).
+        out_path.write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
+        payload_out["saved_file"] = out_path.name
+    except Exception:
+        payload_out["saved_file"] = ""
+    return payload_out
 
 
 def _build_strategy_instance(strategy_name: str, seed: int):
@@ -293,6 +373,15 @@ def _build_strategy_instance(strategy_name: str, seed: int):
     if cls in {SimulatedAnnealingStrategy, ReinforcementLearningDispatchStrategy, HyperHeuristicStrategy}:
         return cls(seed=seed)
     return cls()
+
+
+def _scenario_seed_for_scale(base_seed: int, scale: str) -> int:
+    scales = list(SCENARIO_SCALES.keys())
+    try:
+        idx = scales.index(scale)
+    except ValueError:
+        idx = 0
+    return int(base_seed) + idx * 100
 
 
 def _serialize_scenario(scenario) -> dict:
@@ -339,6 +428,7 @@ def _serialize_scenario(scenario) -> dict:
             for station in scenario.stations.values()
         ],
         "depot_node": scenario.config.depot_node,
+        "weather_mode": scenario.config.weather_mode,
     }
 
 

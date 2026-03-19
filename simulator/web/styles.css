@@ -301,6 +301,49 @@ button.ghost {
   animation: fade-up 620ms ease-out;
 }
 
+.weather-fx {
+  position: absolute;
+  inset: 12px;
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.weather-fx.normal {
+  opacity: 0;
+}
+
+.weather-fx.rain {
+  opacity: 1;
+  background:
+    linear-gradient(180deg, rgba(102, 145, 178, 0.18), rgba(34, 72, 106, 0.18)),
+    repeating-linear-gradient(
+      115deg,
+      rgba(194, 224, 255, 0.00) 0px,
+      rgba(194, 224, 255, 0.00) 8px,
+      rgba(194, 224, 255, 0.28) 8px,
+      rgba(194, 224, 255, 0.28) 10px
+    );
+  animation: rain-shift 520ms linear infinite;
+}
+
+.weather-fx.congestion {
+  opacity: 1;
+  background:
+    radial-gradient(circle at 50% 75%, rgba(255, 120, 56, 0.22), rgba(255, 120, 56, 0.02) 45%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 168, 73, 0.00) 0px,
+      rgba(255, 168, 73, 0.00) 18px,
+      rgba(255, 129, 58, 0.15) 18px,
+      rgba(255, 129, 58, 0.15) 22px
+    ),
+    linear-gradient(180deg, rgba(255, 182, 119, 0.14), rgba(179, 70, 16, 0.16));
+  animation: congestion-pulse 1.6s ease-in-out infinite;
+}
+
 .map-wrap::after {
   content: "";
   position: absolute;
@@ -441,6 +484,42 @@ button.ghost {
   margin-top: 14px;
   padding: 14px;
   animation: fade-up 700ms ease-out;
+}
+
+.weather-panel {
+  margin-top: 14px;
+  padding: 14px;
+  animation: fade-up 730ms ease-out;
+}
+
+.weather-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 10px;
+}
+
+.weather-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #4d6479;
+}
+
+.weather-controls select {
+  min-width: 156px;
+  height: 36px;
+}
+
+.weather-status {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 8px;
 }
 
 .benchmark-controls {
@@ -745,6 +824,27 @@ button.ghost {
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+@keyframes rain-shift {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: 0 0, -18px 38px;
+  }
+}
+
+@keyframes congestion-pulse {
+  0% {
+    filter: saturate(0.96) brightness(0.96);
+  }
+  50% {
+    filter: saturate(1.08) brightness(1.04);
+  }
+  100% {
+    filter: saturate(0.96) brightness(0.96);
   }
 }
 

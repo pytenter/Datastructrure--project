@@ -74,10 +74,19 @@ SCENARIO_SCALES: Dict[str, ScenarioScale] = {
     ),
 }
 
+WEATHER_MODES = ("normal", "rain", "congestion")
 
-def build_scenario(scale_name: str, seed: int, allow_collaboration: bool = False) -> ScenarioData:
+
+def build_scenario(
+    scale_name: str,
+    seed: int,
+    allow_collaboration: bool = False,
+    weather_mode: str = "normal",
+) -> ScenarioData:
     if scale_name not in SCENARIO_SCALES:
         raise ValueError(f"Unknown scale: {scale_name}")
+    if weather_mode not in WEATHER_MODES:
+        weather_mode = "normal"
 
     scale = SCENARIO_SCALES[scale_name]
     rnd = random.Random(seed)
@@ -188,10 +197,8 @@ def build_scenario(scale_name: str, seed: int, allow_collaboration: bool = False
         allow_depot_charging=True,
         depot_charge_rate=7.2,
         depot_charge_ports=max(3, min(8, scale.vehicles // 3)),
-        rush_windows=[
-            (int(scale.horizon * 0.18), int(scale.horizon * 0.34), 1.45),
-            (int(scale.horizon * 0.56), int(scale.horizon * 0.72), 1.30),
-        ],
+        rush_windows=_build_weather_rush_windows(scale=scale, rnd=rnd, weather_mode=weather_mode),
+        weather_mode=weather_mode,
     )
 
     tasks.sort(key=lambda item: (item.release_time, item.task_id))
@@ -744,6 +751,42 @@ def _merge_paths(*paths: List[int]) -> List[int]:
             continue
         merged.extend(path[1:])
     return merged
+
+
+def _build_weather_rush_windows(
+    scale: ScenarioScale,
+    rnd: random.Random,
+    weather_mode: str,
+) -> List[tuple[int, int, float]]:
+    base = [
+        (int(scale.horizon * 0.18), int(scale.horizon * 0.34), 1.45),
+        (int(scale.horizon * 0.56), int(scale.horizon * 0.72), 1.30),
+    ]
+    if weather_mode == "normal":
+        return base
+
+    if weather_mode == "rain":
+        factor = 1.17
+        incident_count = 2
+        incident_mul = (1.22, 1.40)
+    else:
+        # congestion
+        factor = 1.35
+        incident_count = 3
+        incident_mul = (1.35, 1.72)
+
+    windows: List[tuple[int, int, float]] = [
+        (start, end, mult * factor) for start, end, mult in base
+    ]
+    for _ in range(incident_count):
+        center = rnd.randint(int(0.08 * scale.horizon), int(0.92 * scale.horizon))
+        half = rnd.randint(max(10, int(0.035 * scale.horizon)), max(16, int(0.08 * scale.horizon)))
+        start = max(0, center - half)
+        end = min(scale.horizon, center + half)
+        mul = rnd.uniform(*incident_mul)
+        windows.append((start, end, mul))
+    windows.sort(key=lambda item: (item[0], item[1]))
+    return windows
 
 
 def _select_station_nodes(

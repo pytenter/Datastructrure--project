@@ -32,6 +32,14 @@
         Seed
         <input id="seedInput" type="number" value="20260309">
       </label>
+      <label>
+        Weather
+        <select id="weatherSelect">
+          <option value="normal">normal</option>
+          <option value="rain">rain</option>
+          <option value="congestion">congestion</option>
+        </select>
+      </label>
       <label class="checkbox">
         <input id="collabInput" type="checkbox" checked>
         Allow Collaboration
@@ -47,6 +55,7 @@
     <main class="workspace">
       <section class="left-pane">
         <section class="map-wrap card">
+          <div id="weatherFx" class="weather-fx normal" aria-hidden="true"></div>
           <svg id="mapSvg" viewBox="0 0 1000 700" aria-label="dispatch map">
             <defs>
               <filter id="lineGlow" x="-20%" y="-20%" width="140%" height="140%">
@@ -116,11 +125,38 @@
           Metric
           <select id="benchmarkMetric"></select>
         </label>
+        <label>
+          Table Scale
+          <select id="benchmarkTableScale">
+            <option value="all">all</option>
+            <option value="small">small</option>
+            <option value="medium">medium</option>
+            <option value="large">large</option>
+          </select>
+        </label>
         <button id="refreshBenchmarkBtn" class="ghost">Refresh Data</button>
       </div>
       <div id="benchmarkStatus" class="benchmark-status">No benchmark file loaded.</div>
       <div id="benchmarkChart" class="benchmark-chart empty">Run benchmark commands first, then click Refresh Data.</div>
       <div id="benchmarkTable" class="benchmark-table-wrap"></div>
+    </section>
+
+    <section class="card weather-panel">
+      <h2>Weather Stats</h2>
+      <div class="weather-controls">
+        <label>
+          Table Scale
+          <select id="weatherStatsScale">
+            <option value="all">all</option>
+            <option value="small">small</option>
+            <option value="medium">medium</option>
+            <option value="large">large</option>
+          </select>
+        </label>
+        <button id="runWeatherStatsBtn" class="ghost">Run Weather Stats</button>
+      </div>
+      <div id="weatherStatsStatus" class="weather-status">Click "Run Weather Stats" to compute all scales and weather modes.</div>
+      <div id="weatherStatsTable" class="benchmark-table-wrap"></div>
     </section>
 
     <footer id="statusBar">Status: Waiting for simulation</footer>

@@ -132,6 +132,7 @@ class SimulationConfig:
     depot_charge_rate: float = 7.2
     depot_charge_ports: int = 4
     rush_windows: List[tuple[int, int, float]] = field(default_factory=list)
+    weather_mode: str = "normal"
 
 
 @dataclass

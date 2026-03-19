@@ -73,6 +73,22 @@ Default URL:
 
 - `http://127.0.0.1:8765`
 
+### Weather and incident simulation in dashboard
+
+- In the top control bar, use **Weather** selector:
+  - `normal`
+  - `rain`
+  - `congestion`
+- `rain` and `congestion` both:
+  - add map visual effects in replay
+  - change traffic multipliers in simulation (longer travel time windows + incident windows)
+- To compare outcomes across all scales and strategies:
+  - open **Weather Scenario Statistics**
+  - click **Run Weather Stats**
+  - table shows `Completed / Overtime / Unserved` for:
+    - `small`, `medium`, `large`
+    - `normal`, `rain`, `congestion`
+
 ### Run dynamic-only benchmark
 
 ```bash
@@ -88,6 +104,34 @@ python main.py --allow-collaboration --exact-backend cplex --exact-scales small 
 Note:
 - For `medium/large`, exact solving is automatically reduced to a license-safe subset when using size-limited CPLEX licenses.
 - Result rows are marked as `static_exact_*_reduced`.
+
+### Recommended split run (higher time limit)
+
+When `medium/large` takes too long, run in two stages and merge:
+
+1. Run `small + medium` (higher limit)
+
+```bash
+python main.py --scales small medium --allow-collaboration --exact-backend cplex --exact-scales small medium --exact-time-limit 600 --exact-mip-gap 0.02 --output results/summary_cplex_sm.json
+```
+
+2. Run `large` only (higher limit)
+
+```bash
+python main.py --scales large --allow-collaboration --exact-backend cplex --exact-scales large --exact-time-limit 1200 --exact-mip-gap 0.03 --output results/summary_cplex_large.json
+```
+
+3. Merge into one file (for dashboard)
+
+```bash
+python -c "import json;from pathlib import Path;sm=json.loads(Path('results/summary_cplex_sm.json').read_text(encoding='utf-8'));lg=json.loads(Path('results/summary_cplex_large.json').read_text(encoding='utf-8'));rows=[r for r in sm if r.get('scenario')!='large']+[r for r in lg if r.get('scenario')=='large'];order={'small':0,'medium':1,'large':2};rows.sort(key=lambda r:(order.get(r.get('scenario'),99),r.get('mode',''),r.get('strategy','')));Path('results/summary_cplex.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2),encoding='utf-8');print('merged -> results/summary_cplex.json, rows=',len(rows))"
+```
+
+4. View in dashboard
+
+```bash
+python dashboard.py
+```
 
 ### Visualize benchmark outputs in dashboard
 

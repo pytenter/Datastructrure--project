@@ -21,6 +21,7 @@ const dom = {
   scaleSelect: document.getElementById("scaleSelect"),
   strategySelect: document.getElementById("strategySelect"),
   seedInput: document.getElementById("seedInput"),
+  weatherSelect: document.getElementById("weatherSelect"),
   collabInput: document.getElementById("collabInput"),
   runBtn: document.getElementById("runBtn"),
   compareBtn: document.getElementById("compareBtn"),
@@ -38,10 +39,16 @@ const dom = {
   benchmarkDataset: document.getElementById("benchmarkDataset"),
   benchmarkScenario: document.getElementById("benchmarkScenario"),
   benchmarkMetric: document.getElementById("benchmarkMetric"),
+  benchmarkTableScale: document.getElementById("benchmarkTableScale"),
   refreshBenchmarkBtn: document.getElementById("refreshBenchmarkBtn"),
   benchmarkStatus: document.getElementById("benchmarkStatus"),
   benchmarkChart: document.getElementById("benchmarkChart"),
   benchmarkTable: document.getElementById("benchmarkTable"),
+  runWeatherStatsBtn: document.getElementById("runWeatherStatsBtn"),
+  weatherStatsStatus: document.getElementById("weatherStatsStatus"),
+  weatherStatsTable: document.getElementById("weatherStatsTable"),
+  weatherStatsScale: document.getElementById("weatherStatsScale"),
+  weatherFx: document.getElementById("weatherFx"),
   mapSvg: document.getElementById("mapSvg"),
   edgesLayer: document.getElementById("edgesLayer"),
   historyLayer: document.getElementById("historyLayer"),
@@ -78,7 +85,9 @@ const state = {
   replayEndTime: 0,
   replayRafId: null,
   replayLastFrameTs: 0,
-  replayLoggedTaskIds: new Set()
+  replayLoggedTaskIds: new Set(),
+  preDispatchView: false,
+  weatherStatsData: null
 };
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -96,12 +105,21 @@ function bindEvents() {
   dom.stepBtn.addEventListener("click", () => void stepReplay());
   dom.resetBtn.addEventListener("click", resetReplay);
   dom.refreshBenchmarkBtn.addEventListener("click", () => void loadBenchmarks());
+  dom.runWeatherStatsBtn.addEventListener("click", () => void runWeatherStats());
+  dom.weatherSelect.addEventListener("change", () => {
+    setWeatherEffect(dom.weatherSelect.value);
+  });
   dom.benchmarkDataset.addEventListener("change", () => {
+    renderBenchmarkTableScaleOptions();
     renderBenchmarkScenarioOptions();
     renderBenchmarkView();
   });
   dom.benchmarkScenario.addEventListener("change", renderBenchmarkView);
   dom.benchmarkMetric.addEventListener("change", renderBenchmarkView);
+  dom.benchmarkTableScale.addEventListener("change", renderBenchmarkView);
+  dom.weatherStatsScale.addEventListener("change", () => {
+    renderWeatherStatsTable(state.weatherStatsData?.rows || []);
+  });
 }
 
 async function initialize() {
@@ -110,8 +128,15 @@ async function initialize() {
 
   fillSelect(dom.scaleSelect, meta.scales, meta.defaults.scale);
   fillSelect(dom.strategySelect, meta.strategies, meta.defaults.strategy);
+  fillSelect(dom.weatherSelect, meta.weather_modes || ["normal", "rain", "congestion"], meta.defaults.weather_mode || "normal");
+  fillSelectByItems(
+    dom.weatherStatsScale,
+    [{ value: "all", label: "all" }, ...(meta.scales || []).map((value) => ({ value, label: value }))],
+    "all"
+  );
   dom.seedInput.value = String(meta.defaults.seed);
   dom.collabInput.checked = Boolean(meta.defaults.allow_collaboration);
+  setWeatherEffect(dom.weatherSelect.value);
 
   await loadBenchmarks();
   setStatus("Status: choose options and run simulation");
@@ -177,7 +202,20 @@ function renderBenchmarkControls() {
     })),
     defaults.metric || "score"
   );
+
+  renderBenchmarkTableScaleOptions();
   renderBenchmarkScenarioOptions();
+}
+
+function renderBenchmarkTableScaleOptions() {
+  const dataset = getSelectedBenchmarkDataset();
+  const scaleOptions = dataset
+    ? Array.from(new Set((dataset.rows || []).map((row) => String(row.scenario || "")))).filter(Boolean).sort((a, b) => a.localeCompare(b))
+    : (state.meta?.scales || []);
+  const current = dom.benchmarkTableScale.value || "all";
+  const options = [{ value: "all", label: "all" }, ...scaleOptions.map((value) => ({ value, label: value }))];
+  const selected = options.some((item) => item.value === current) ? current : "all";
+  fillSelectByItems(dom.benchmarkTableScale, options, selected);
 }
 
 function renderBenchmarkScenarioOptions() {
@@ -272,6 +310,9 @@ function renderBenchmarkView() {
 }
 
 function renderBenchmarkTable(rows, metricId) {
+  const tableScale = dom.benchmarkTableScale.value || "all";
+  const displayRows = rows.filter((row) => tableScale === "all" || String(row.scenario) === tableScale);
+
   const table = document.createElement("table");
   table.className = "benchmark-table";
 
@@ -285,7 +326,7 @@ function renderBenchmarkTable(rows, metricId) {
   thead.appendChild(headRow);
 
   const tbody = document.createElement("tbody");
-  rows.slice(0, 20).forEach((row) => {
+  displayRows.forEach((row) => {
     const tr = document.createElement("tr");
     const cells = [
       row.scenario,
@@ -370,7 +411,8 @@ function readCommonPayload() {
     scale: dom.scaleSelect.value,
     strategy: dom.strategySelect.value,
     seed: Number(dom.seedInput.value),
-    allow_collaboration: dom.collabInput.checked
+    allow_collaboration: dom.collabInput.checked,
+    weather_mode: dom.weatherSelect.value
   };
 }
 
@@ -382,7 +424,7 @@ async function runSimulation() {
     const data = await postJson("/api/run", payload);
     hydrateRunData(data);
     renderStaticMapBase();
-    renderReplayAt(0, { appendLogs: false, initialSummary: true });
+    renderReplayAt(0, { appendLogs: false, initialSummary: true, preDispatch: true });
     dom.logBox.textContent = "";
     setStatus(`Status: simulation complete, ${state.events.length} dispatch events`);
   } catch (err) {
@@ -410,6 +452,7 @@ function hydrateRunData(data) {
   state.replayLoggedTaskIds = new Set();
   state.replayLastFrameTs = 0;
   state.replayRafId = null;
+  state.preDispatchView = false;
 
   state.nodeMap = new Map();
   state.scenario.nodes.forEach((node) => state.nodeMap.set(node.node_id, node));
@@ -437,6 +480,7 @@ function hydrateRunData(data) {
   state.initialVehicleState = cloneVehicleStateMap(state.vehicleState);
 
   state.projection = buildProjection(state.scenario.nodes);
+  setWeatherEffect(state.scenario.weather_mode || dom.weatherSelect.value);
   prepareReplayTimeline();
 }
 
@@ -526,15 +570,17 @@ async function playReplay() {
     state.currentTime = 0;
     state.replayLoggedTaskIds = new Set();
     dom.logBox.textContent = "";
-    renderReplayAt(0, { appendLogs: false, initialSummary: true });
+    renderReplayAt(0, { appendLogs: false, initialSummary: true, preDispatch: true });
   }
-  if (state.currentTime <= 1e-9) {
+  if (state.preDispatchView && state.currentTime <= 1e-9) {
     const firstDispatch = (state.timelineMissions || [])
       .map((mission) => numberValue(mission.dispatch))
-      .filter((t) => t > 1e-9)
+      .filter((t) => t >= 0)
       .sort((a, b) => a - b)[0];
     if (Number.isFinite(firstDispatch)) {
       renderReplayAt(firstDispatch, { appendLogs: false, initialSummary: false });
+    } else {
+      renderReplayAt(0, { appendLogs: false, initialSummary: false });
     }
   }
 
@@ -631,12 +677,13 @@ function resetReplay() {
   state.lastVehiclePanelPaintAt = 0;
   state.activeReplayVehicleIds = new Set();
   state.replayLoggedTaskIds = new Set();
+  state.preDispatchView = false;
   state.scenario.tasks.forEach((task) => state.taskState.set(task.task_id, "pending"));
   restoreVehicleStateToInitial();
 
   dom.logBox.textContent = "";
   renderStaticMapBase();
-  renderReplayAt(0, { appendLogs: false, initialSummary: true });
+  renderReplayAt(0, { appendLogs: false, initialSummary: true, preDispatch: true });
   setStatus("Status: replay reset");
 }
 
@@ -801,14 +848,17 @@ function renderReplayAt(simTime, options = {}) {
   }
   const appendLogs = Boolean(options.appendLogs);
   const initialSummary = Boolean(options.initialSummary);
+  const preDispatch = Boolean(options.preDispatch);
   const replayEnd = Number.isFinite(state.replayEndTime) ? state.replayEndTime : 0;
   const target = clamp(numberValue(simTime ?? 0), 0, Math.max(0, replayEnd));
+  const eventTime = preDispatch ? -1e-6 : target;
+  state.preDispatchView = preDispatch && target <= 1e-9;
   state.currentTime = target;
 
-  const dispatchedEvents = state.events.filter((event) => Number(event.dispatch_time) <= target + 1e-9);
-  const completedEvents = state.events.filter((event) => Number(event.completion_time) <= target + 1e-9);
+  const dispatchedEvents = state.events.filter((event) => Number(event.dispatch_time) <= eventTime + 1e-9);
+  const completedEvents = state.events.filter((event) => Number(event.completion_time) <= eventTime + 1e-9);
   const activeEvents = state.events.filter(
-    (event) => Number(event.dispatch_time) <= target + 1e-9 && Number(event.completion_time) > target + 1e-9
+    (event) => Number(event.dispatch_time) <= eventTime + 1e-9 && Number(event.completion_time) > eventTime + 1e-9
   );
   const dispatchedRoutes = [];
   dispatchedEvents.forEach((event) => {
@@ -823,9 +873,9 @@ function renderReplayAt(simTime, options = {}) {
   state.routeHistory = dispatchedRoutes.slice(-160);
 
   const activeMissions = state.timelineMissions.filter(
-    (mission) => mission.dispatch <= target + 1e-9 && mission.completion > target + 1e-9
+    (mission) => mission.dispatch <= eventTime + 1e-9 && mission.completion > eventTime + 1e-9
   );
-  const finishedMissions = state.timelineMissions.filter((mission) => mission.completion <= target + 1e-9);
+  const finishedMissions = state.timelineMissions.filter((mission) => mission.completion <= eventTime + 1e-9);
 
   state.scenario.tasks.forEach((task) => state.taskState.set(task.task_id, "pending"));
   activeEvents.forEach((event) => state.taskState.set(Number(event.task_id), "delivering"));
@@ -1375,7 +1425,10 @@ function renderSummary(initial) {
   }
 
   const doneCount = Array.from(state.taskState.values()).filter((s) => s === "done").length;
-  const completionRate = state.summary.total_tasks > 0 ? (doneCount / state.summary.total_tasks) * 100 : 0;
+  const replayCompletionRate = state.summary.total_tasks > 0 ? (doneCount / state.summary.total_tasks) * 100 : 0;
+  const finalCompletionRate = state.summary.total_tasks > 0
+    ? (numberValue(state.summary.completed_tasks) / state.summary.total_tasks) * 100
+    : 0;
   const completedEvents = state.events.filter((event) => numberValue(event.completion_time) <= state.currentTime + 1e-9);
   const activeEvents = state.events.filter(
     (event) =>
@@ -1394,18 +1447,19 @@ function renderSummary(initial) {
   });
   const utilization = vehicles.length > 0 ? (activeVehicles / vehicles.length) * 100 : 0;
 
-  dom.summaryBox.textContent = `strategy=${state.summary.strategy} | scene=${state.summary.scenario} | progress=${state.eventIndex}/${state.events.length}`;
+  dom.summaryBox.textContent = `strategy=${state.summary.strategy} | scene=${state.summary.scenario} | weather=${state.scenario.weather_mode || "normal"} | progress=${state.eventIndex}/${state.events.length}`;
 
   const items = [
     `Current simulation time: ${state.currentTime.toFixed(1)}`,
     `Accumulated score: ${state.scoreAcc.toFixed(2)}`,
-    `Task completion rate: ${completionRate.toFixed(1)}%`,
+    `Task completion rate (final): ${finalCompletionRate.toFixed(1)}%`,
     `Vehicle utilization: ${utilization.toFixed(1)}%`,
     `Total tasks: ${state.summary.total_tasks}`,
-    `Completed in replay: ${doneCount}`,
+    `Completed (final): ${state.summary.completed_tasks}`,
+    `Replay progress completed: ${doneCount} (${replayCompletionRate.toFixed(1)}%)`,
     `Multi-vehicle tasks (replay): ${multiCompleted}/${multiTotal} | active now ${multiActive}`,
-    `Unserved: ${state.summary.unserved_tasks}`,
-    `Overtime: ${state.summary.overtime_tasks}`,
+    `Unserved (final): ${state.summary.unserved_tasks}`,
+    `Overtime (final): ${state.summary.overtime_tasks}`,
     `Final score (simulation): ${Number(state.summary.final_score).toFixed(2)}`,
     `Total distance: ${Number(state.summary.total_distance).toFixed(2)}`,
     `Total charging wait: ${Number(state.summary.total_charging_wait).toFixed(2)}`,
@@ -1584,6 +1638,93 @@ function appendLog(event) {
 function setStatus(message, isError = false) {
   dom.statusBar.textContent = message;
   dom.statusBar.style.color = isError ? "#A22A39" : "#3F556A";
+}
+
+function normalizeWeatherMode(mode) {
+  const m = String(mode || "normal").toLowerCase();
+  if (m === "rain" || m === "congestion") {
+    return m;
+  }
+  return "normal";
+}
+
+function setWeatherEffect(mode) {
+  const weatherMode = normalizeWeatherMode(mode);
+  if (!dom.weatherFx) {
+    return;
+  }
+  dom.weatherFx.classList.remove("normal", "rain", "congestion");
+  dom.weatherFx.classList.add(weatherMode);
+}
+
+async function runWeatherStats() {
+  const payload = readCommonPayload();
+  dom.weatherStatsStatus.textContent = "Computing weather stats for all scales and strategies...";
+  dom.weatherStatsTable.innerHTML = "";
+  try {
+    const data = await postJson("/api/weather-stats", payload);
+    state.weatherStatsData = data;
+    renderWeatherStatsTable(data.rows || []);
+    const saved = data.saved_file ? ` | saved=${data.saved_file}` : "";
+    dom.weatherStatsStatus.textContent = `Weather stats ready: rows=${(data.rows || []).length}${saved}`;
+  } catch (err) {
+    dom.weatherStatsStatus.textContent = `Weather stats failed: ${err.message}`;
+    dom.weatherStatsTable.innerHTML = "";
+  }
+}
+
+function renderWeatherStatsTable(rows) {
+  const scale = dom.weatherStatsScale.value || "all";
+  const filtered = rows.filter((row) => scale === "all" || String(row.scenario) === scale);
+  if (!filtered.length) {
+    dom.weatherStatsTable.innerHTML = "<div style=\"padding:10px;color:#5d7387;font-size:13px;\">No weather stats data.</div>";
+    return;
+  }
+  const sorted = [...filtered].sort((a, b) => {
+    const sa = String(a.scenario || "");
+    const sb = String(b.scenario || "");
+    if (sa !== sb) {
+      return sa.localeCompare(sb);
+    }
+    const wa = String(a.weather || "");
+    const wb = String(b.weather || "");
+    if (wa !== wb) {
+      return wa.localeCompare(wb);
+    }
+    return String(a.strategy || "").localeCompare(String(b.strategy || ""));
+  });
+
+  const table = document.createElement("table");
+  table.className = "benchmark-table";
+  const thead = document.createElement("thead");
+  const trh = document.createElement("tr");
+  ["Scenario", "Weather", "Strategy", "Completed", "Overtime", "Unserved"].forEach((name) => {
+    const th = document.createElement("th");
+    th.textContent = name;
+    trh.appendChild(th);
+  });
+  thead.appendChild(trh);
+  const tbody = document.createElement("tbody");
+  sorted.forEach((row) => {
+    const tr = document.createElement("tr");
+    [
+      row.scenario,
+      row.weather,
+      row.strategy,
+      String(numberValue(row.completed).toFixed(0)),
+      String(numberValue(row.overtime).toFixed(0)),
+      String(numberValue(row.unserved).toFixed(0))
+    ].forEach((text) => {
+      const td = document.createElement("td");
+      td.textContent = String(text);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(thead);
+  table.appendChild(tbody);
+  dom.weatherStatsTable.innerHTML = "";
+  dom.weatherStatsTable.appendChild(table);
 }
 
 function vehicleColor(vehicleId) {
